@@ -11,12 +11,16 @@ __author__ = 'Takafumi Arakaki'
 __license__ = None
 
 
-def cli_init(name, url):
+def getprefix(type):
     from socket import gethostname
-
     host = gethostname()
     relpath = os.path.relpath(os.getcwd(), os.path.expanduser('~'))
-    prefix = 'host/{0}/{1}'.format(host, relpath)
+    prefix = '/'.join(type, host, relpath)
+    return prefix
+
+
+def cli_init(name, url):
+    prefix = getprefix('host')
     check_call(['git', 'remote', 'add', name, url])
     check_call(['git', 'config', 'remote.{0}.fetch'.format(name),
                 '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name)])
@@ -26,6 +30,7 @@ def cli_init(name, url):
 
 def cli_trash():
     raise NotImplementedError()
+    prefix = getprefix('trash')
 
 
 def cli_trash_branch():
