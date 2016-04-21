@@ -1,6 +1,7 @@
 *.pyc
 /*.egg-info
+/.cache
 /.tox
-/doc/build
 /MANIFEST
 /dist
+/doc/build
