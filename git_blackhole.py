@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 import os
-from subprocess import check_call
+from subprocess import check_call, check_output
 
 __version__ = '0.0.0'
 __author__ = 'Takafumi Arakaki'
@@ -19,6 +19,17 @@ def getprefix(type):
     return prefix
 
 
+def getbranches():
+    checkout = None
+    branches = []
+    for line in check_output(['git', 'branch', '--list']).splitlines():
+        br = line.lstrip('*').strip()
+        branches.append(br)
+        if line.startswith('*'):
+            checkout = br
+    return branches, checkout
+
+
 def cli_init(name, url):
     prefix = getprefix('host')
     check_call(['git', 'remote', 'add', name, url])
@@ -26,6 +37,23 @@ def cli_init(name, url):
                 '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name)])
     check_call(['git', 'config', 'remote.{0}.push'.format(name),
                 '+refs/heads/*:{0}/*'.format(prefix)])
+
+
+def cli_push(verify, remote, verbose):
+    branches, _checkout = getbranches()
+    cmd = ['git', 'push', '--force']
+    # --force is necessary due to HEAD:HEAD (except for the first
+    # invocation of this command)
+    if verify is True:
+        cmd.append('--verify')
+    elif verify is False:
+        cmd.append('--no-verify')
+    cmd.append(remote)
+    cmd.extend(branches)
+    cmd.append('HEAD:HEAD')
+    if verbose:
+        print(*cmd)
+    check_call(cmd)
 
 
 def cli_trash():
@@ -69,6 +97,14 @@ def make_parser(doc=__doc__):
     p = subp('init', cli_init)
     p.add_argument('--name', default='blackhole')
     p.add_argument('url')
+
+    p = subp('push', cli_push)
+    p.add_argument('--verbose', '-v', action='store_true')
+    p.add_argument('--verify', default=None, action='store_true')
+    p.add_argument('--no-verify', dest='verify', action='store_false')
+    p.add_argument('--remote', default='blackhole')
+    # FIXME: Stop hard-coding remote name.  Use git config system to
+    # set default.
 
     p = subp('trash', cli_trash)
     p.add_argument
