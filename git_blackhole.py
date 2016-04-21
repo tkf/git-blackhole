@@ -15,7 +15,7 @@ def getprefix(type):
     from socket import gethostname
     host = gethostname()
     relpath = os.path.relpath(os.getcwd(), os.path.expanduser('~'))
-    prefix = '/'.join(type, host, relpath)
+    prefix = '/'.join([type, host, relpath])
     return prefix
 
 
@@ -28,6 +28,11 @@ def getbranches():
         if line.startswith('*'):
             checkout = br
     return branches, checkout
+
+
+def getconfig(name, aslist=False):
+    out = check_output(['git', 'config', '--null', '--get', name])
+    return out.split('\0') if aslist else out.rstrip('\0')
 
 
 def cli_init(name, url):
@@ -61,8 +66,19 @@ def cli_trash():
     prefix = getprefix('trash')
 
 
-def cli_trash_branch():
-    raise NotImplementedError()
+def cli_trash_branch(branch, remote):
+    """
+    Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
+
+    - FIXME: record branch name somewhere.
+    - FIXME: remove remote branch.
+    """
+    prefix = getprefix('trash')
+    rev = check_output(['git', 'rev-parse', branch]).strip()
+    url = getconfig('remote.{0}.url'.format(remote))
+    check_call(['git', 'push', url, '{0}:{1}/{2}/{3}'
+                .format(branch, prefix, rev[:2], rev[2:])])
+    check_call(['git', 'branch', '--delete', '--force', branch])
 
 
 def cli_trash_stash():
@@ -113,7 +129,8 @@ def make_parser(doc=__doc__):
     p.add_argument
 
     p = subp('trash-branch', cli_trash_branch)
-    p.add_argument
+    p.add_argument('branch')
+    p.add_argument('--remote', default='blackhole')  # FIXME: see above
 
     return parser
 
