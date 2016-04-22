@@ -13,6 +13,18 @@ __author__ = 'Takafumi Arakaki'
 __license__ = None
 
 
+def make_run(verbose, dry_run):
+    def run(*command, **kwds):
+        if verbose:
+            redirects = []
+            if 'stdout' in kwds:
+                redirects = ['>', kwds['stdout'].name]
+            print(' '.join(command + redirects))
+        if not dry_run:
+            check_call(command, **kwds)
+    return run
+
+
 def getprefix(type):
     host = gethostname()
     relpath = os.path.relpath(os.getcwd(), os.path.expanduser('~'))
@@ -96,18 +108,21 @@ def git_json_commit(heading, obj, parent):
         parent)
 
 
-def trash_commitish(commitish, remote, info, headingtemp):
+def trash_commitish(commitish, remote, info, headingtemp,
+                    verbose, dry_run):
     """
     Push `commitish` to `remote` trash.
     """
+    run = make_run(verbose, dry_run)
     prefix = getprefix('trash')
     rev = check_output(['git', 'rev-parse', commitish]).strip()
     url = getconfig('remote.{0}.url'.format(remote))
     info = dict(info, **getrecinfo())
     heading = headingtemp.format(**info)
     rev = git_json_commit(heading, info, commitish)
-    check_call(['git', 'push', url, '{0}:refs/heads/{1}/{2}/{3}'
-                .format(rev, prefix, rev[:2], rev[2:])])
+    refspec = '{0}:refs/heads/{1}/{2}/{3}'.format(rev, prefix,
+                                                  rev[:2], rev[2:])
+    run('git', 'push', url, refspec)
 
 
 def git_stash_list():
@@ -167,16 +182,18 @@ def parse_range(stash_range):
         return lambda _: True
 
 
-def cli_init(name, url):
+def cli_init(name, url, verbose, dry_run):
+    run = make_run(verbose, dry_run)
     prefix = getprefix('host')
-    check_call(['git', 'remote', 'add', name, url])
-    check_call(['git', 'config', 'remote.{0}.fetch'.format(name),
-                '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name)])
-    check_call(['git', 'config', 'remote.{0}.push'.format(name),
-                '+refs/heads/*:{0}/*'.format(prefix)])
+    run('git', 'remote', 'add', name, url)
+    run('git', 'config', 'remote.{0}.fetch'.format(name),
+        '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name))
+    run('git', 'config', 'remote.{0}.push'.format(name),
+        '+refs/heads/*:{0}/*'.format(prefix))
 
 
-def cli_push(verify, remote, verbose):
+def cli_push(verify, remote, verbose, dry_run):
+    run = make_run(verbose, dry_run)
     prefix = getprefix('host')
     branches, _checkout = getbranches()
     cmd = ['git', 'push', '--force']
@@ -190,9 +207,7 @@ def cli_push(verify, remote, verbose):
     cmd.extend(branches)
     # Explicitly specify destination (HEAD:HEAD didn't work):
     cmd.append('HEAD:refs/heads/{0}/HEAD'.format(prefix))
-    if verbose:
-        print(*cmd)
-    check_call(cmd)
+    run(*cmd)
 
 
 def cli_trash():
@@ -200,7 +215,7 @@ def cli_trash():
     prefix = getprefix('trash')
 
 
-def cli_trash_branch(branch, remote, remove_upstream):
+def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
     """
     Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
 
@@ -209,6 +224,7 @@ def cli_trash_branch(branch, remote, remove_upstream):
       the info I need.
 
     """
+    run = make_run(verbose, dry_run)
     branches, checkout = getbranches()
     if branch == checkout:
         print("Cannot trash the branch '{0}' which you are currently on."
@@ -219,18 +235,21 @@ def cli_trash_branch(branch, remote, remove_upstream):
         upstream_branch = getconfig('branch.{0}.merge'.format(branch))
     trash_commitish(
         branch, remote, dict(command='trash-branch', branch=branch),
-        'Trash branch "{branch}" at {host}:{repo}')
-    check_call(['git', 'branch', '--delete', '--force', branch])
+        'Trash branch "{branch}" at {host}:{repo}',
+        verbose, dry_run)
+    run('git', 'branch', '--delete', '--force', branch)
 
     if remove_upstream:
         if upstream_repo is None:
             print('Not removing upstream branch as upstream is'
                   ' not configured.')
         else:
-            check_call(['git', 'push', upstream_repo, ':' + upstream_branch])
+            run('git', 'push', upstream_repo, ':' + upstream_branch)
 
 
-def cli_trash_stash(remote, stash_range, keep_stashes):
+def cli_trash_stash(remote, stash_range, keep_stashes,
+                    verbose, dry_run):
+    run = make_run(verbose, dry_run)
     in_range = parse_range(stash_range)
     stashes = [s for s in map(parse_stash, git_stash_list())
                if in_range(s[0])]
@@ -248,9 +267,10 @@ def cli_trash_stash(remote, stash_range, keep_stashes):
             stash = 'stash@{{{0}}}'.format(num)
             trash_commitish(
                 sha1, remote, dict(command='trash-stash'),
-                'Trash a stash at {host}:{repo}')
+                'Trash a stash at {host}:{repo}',
+                verbose, dry_run)
             if not keep_stashes:
-                check_call(['git', 'stash', 'drop', stash])
+                run('git', 'stash', 'drop', stash)
 
 
 def make_parser(doc=__doc__):
@@ -276,6 +296,13 @@ def make_parser(doc=__doc__):
             help=title,
             description=doc)
         p.set_defaults(func=func)
+        p.add_argument(
+            '--verbose', '-v', default=False, action='store_true',
+            help='print git commands to run')
+        p.add_argument(
+            '--dry-run', '-n', default=False, action='store_true',
+            help='do nothing when given. Use it with --verbose to see '
+            'what is going to happen.')
         return p
 
     p = subp('init', cli_init)
@@ -283,7 +310,6 @@ def make_parser(doc=__doc__):
     p.add_argument('url')
 
     p = subp('push', cli_push)
-    p.add_argument('--verbose', '-v', action='store_true')
     p.add_argument('--verify', default=None, action='store_true')
     p.add_argument('--no-verify', dest='verify', action='store_false')
     p.add_argument('--remote', default='blackhole')
