@@ -130,6 +130,7 @@ def trash_commitish(commitish, remote, info, headingtemp,
     refspec = '{0}:refs/heads/{1}/{2}/{3}'.format(rev, prefix,
                                                   rev[:2], rev[2:])
     run('git', 'push', url, refspec)
+    return refspec
 
 
 def git_stash_list():

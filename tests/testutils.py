@@ -80,10 +80,12 @@ class MixInGitRepoPerClass(MixInTempDirPerClass):
 
     repo = 'repo'
 
+    @classmethod
     def setUpClass(cls):
-        super(MixInGitRepoPerClass, cls).setUp()
+        super(MixInGitRepoPerClass, cls).setUpClass()
         _setUp_GitRepo(cls)
 
+    @classmethod
     def tearDownClass(cls):
         _tearDown_GitRepo(cls)
         super(MixInGitRepoPerClass, cls).tearDownClass()
@@ -107,6 +109,7 @@ class MixInGitReposPerClass(MixInTempDirPerClass):
 
     repos = []
 
+    @classmethod
     def setUpClass(cls):
-        super(MixInGitReposPerClass, cls).setUp()
+        super(MixInGitReposPerClass, cls).setUpClass()
         _setUp_GitRepos(cls)
