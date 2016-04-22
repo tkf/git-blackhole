@@ -20,6 +20,7 @@ def make_run(verbose, dry_run):
             if 'stdout' in kwds:
                 redirects = ('>', kwds['stdout'].name)
             print(' '.join(command + redirects))
+            sys.stdout.flush()
         if not dry_run:
             check_call(command, **kwds)
     return run
@@ -199,6 +200,9 @@ def parse_range(stash_range):
 
 
 def cli_init(name, url, verbose, dry_run):
+    """
+    Add blackhole remote at `url` with `name`.
+    """
     run = make_run(verbose, dry_run)
     prefix = getprefix('host')
     run('git', 'remote', 'add', name, url)
@@ -209,6 +213,9 @@ def cli_init(name, url, verbose, dry_run):
 
 
 def cli_push(verify, remote, verbose, dry_run):
+    """
+    Push branches and HEAD to blackhole `remote`.
+    """
     run = make_run(verbose, dry_run)
     prefix = getprefix('host')
     branches, _checkout = getbranches()
@@ -260,6 +267,9 @@ def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
 
 def cli_trash_stash(remote, stash_range, keep_stashes,
                     verbose, dry_run):
+    """
+    Push stashes to trash/$HOST/$RELPATH/$SHA1 and remove them locally.
+    """
     run = make_run(verbose, dry_run)
     in_range = parse_range(stash_range)
     stashes = [s for s in map(parse_stash, git_stash_list())
