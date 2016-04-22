@@ -32,8 +32,10 @@ def getbranches():
 
 
 def getconfig(name, aslist=False):
-    out = check_output(['git', 'config', '--null', '--get', name])
-    return out.split('\0') if aslist else out.rstrip('\0')
+    out = check_output(['git', 'config', '--null'] + (
+        ['--get-all'] if aslist else ['--get']
+    ) + [name]).decode()
+    return out.split('\0')[:-1] if aslist else out.rstrip('\0')
 
 
 def cli_init(name, url):
