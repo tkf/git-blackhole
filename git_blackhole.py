@@ -5,7 +5,6 @@ from __future__ import print_function
 
 import os
 import sys
-from socket import gethostname
 from subprocess import check_call, check_output, CalledProcessError
 
 __version__ = '0.0.0'
@@ -27,16 +26,19 @@ def make_run(verbose, dry_run):
 
 
 def getprefix(type):
-    host = gethostname()
-    relpath = os.path.relpath(os.getcwd(), os.path.expanduser('~'))
-    prefix = '/'.join([type, host, relpath])
-    return prefix
+    info = getrecinfo()
+    return '{type}/{host}/{relpath}'.format(
+        relpath=os.path.relpath(info['repo'], os.path.expanduser('~')),
+        type=type,
+        **info)
 
 
 def getrecinfo():
+    from socket import gethostname
+    repo = check_output(['git', 'rev-parse', '--show-toplevel'])
     return dict(
         host=gethostname(),
-        repo=os.getcwd(),
+        repo=repo.decode().rstrip(),
         git_blackhole=__version__)
 
 
