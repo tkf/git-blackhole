@@ -1,7 +1,7 @@
 import unittest
 from subprocess import check_call, check_output
 
-from .testutils import MixInGitRepoPerMethod
+from .testutils import MixInGitRepoPerClass, MixInGitRepoPerMethod
 from git_blackhole import getconfig, git_annot_commit
 
 
@@ -14,7 +14,7 @@ def commitchange(file='README', change='change',
                 '--', file])
 
 
-class TestGitConfig(MixInGitRepoPerMethod, unittest.TestCase):
+class TestGitConfig(MixInGitRepoPerClass, unittest.TestCase):
 
     def test_remote_url(self):
         check_call(['git', 'remote', 'add', 'origin', '/dev/null'])
