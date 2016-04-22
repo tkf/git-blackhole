@@ -17,6 +17,11 @@ a blackehole::
   $ git init --bare blackhole.git
   Initialized empty Git repository in */blackhole.git/ (glob)
 
+Initialize remote origin::
+
+  $ git init --bare origin.git
+  Initialized empty Git repository in */origin.git/ (glob)
+
 Initialize local git repository::
 
   $ git init local
@@ -28,6 +33,14 @@ First commit::
   $ touch README.txt
   $ git add .
   $ git commit --message 'First commit' > /dev/null
+
+Push it to the origin::
+
+  $ git remote add origin ../origin.git
+  $ git push --set-upstream origin master
+  To ../origin.git
+   * [new branch]      master -> master
+  Branch master set up to track remote branch master from origin.
 
 
 Initialize git-blackhole
@@ -43,6 +56,7 @@ It just adds git remote named 'blackhole' (by default) and put prefix
 
   $ git remote
   blackhole
+  origin
   $ tail -n4 .git/config | sed s/$(hostname)/myhost/g
   [remote "blackhole"]
   	url = ../blackhole.git
@@ -105,6 +119,8 @@ Make a new branch which would be trashed later.::
   $ git commit --message 'Garbage commit' > /dev/null
   $ git checkout master
   Switched to branch 'master'
+  Your branch is ahead of 'origin/master' by 1 commit.
+    (use "git push" to publish your local commits)
   $ git branch --list
     garbage
   * master
@@ -142,5 +158,41 @@ Note that you cannot trash current checked out branch::
 
   $ git checkout -b garbage
   Switched to a new branch 'garbage'
-  $ git blackhole trash-branch garbage 2> /dev/null
+  $ git blackhole trash-branch garbage
+  Cannot trash the branch 'garbage' which you are currently on.
   [1]
+
+Suppose the branch to be trashed has upstream repository::
+
+  $ git push --set-upstream origin garbage
+  To ../origin.git
+   * [new branch]      garbage -> garbage
+  Branch garbage set up to track remote branch garbage from origin.
+  $ git --git-dir=../origin.git branch --list
+    garbage
+  * master
+
+Then, to remove upstream branch, pass ``--remove-upstream`` or ``-u``
+option::
+
+  $ git checkout master
+  Switched to branch 'master'
+  Your branch is ahead of 'origin/master' by 1 commit.
+    (use "git push" to publish your local commits)
+  $ git blackhole trash-branch --remove-upstream garbage
+  To ../blackhole.git
+   * [new branch]      * -> trash/*/local/*/* (glob)
+  Deleted branch garbage (was *). (glob)
+  To ../origin.git
+   - [deleted]         garbage
+  $ git --git-dir=../origin.git branch --list
+  * master
+
+Note that ``--remove-upstream`` is no-op when upstream repository is
+not set::
+
+  $ git branch garbage
+  $ git blackhole trash-branch --remove-upstream garbage
+  Everything up-to-date
+  Deleted branch garbage (was *). (glob)
+  Not removing upstream branch as upstream is not configured.

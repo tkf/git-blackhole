@@ -29,6 +29,10 @@ class TestGitTools(MixInGitRepos, unittest.TestCase):
             check_call(['git', 'config', '--add', 'spam.egg', 'delicious'])
             assert getconfig('spam.egg', aslist=True) == ['super', 'delicious']
 
+    def test_non_existing_config(self):
+        with self.at('repo'):
+            assert getconfig('non.existing.config') is None
+
     def test_annot_commit(self):
         with self.at('repo'):
             commitchange()

@@ -4,8 +4,9 @@
 from __future__ import print_function
 
 import os
+import sys
 from socket import gethostname
-from subprocess import check_call, check_output
+from subprocess import check_call, check_output, CalledProcessError
 
 __version__ = '0.0.0'
 __author__ = 'Takafumi Arakaki'
@@ -39,14 +40,20 @@ def getbranches():
 
 
 def getconfig(name, aslist=False):
-    out = check_output(['git', 'config', '--null'] + (
-        ['--get-all'] if aslist else ['--get']
-    ) + [name]).decode()
+    try:
+        out = check_output(['git', 'config', '--null'] + (
+            ['--get-all'] if aslist else ['--get']
+        ) + [name]).decode()
+    except CalledProcessError as err:
+        if err.returncode == 1:
+            return None
+        else:
+            raise
     return out.split('\0')[:-1] if aslist else out.rstrip('\0')
 
 
 def check_communicate(cmd, input, **kwds):
-    from subprocess import Popen, PIPE, CalledProcessError
+    from subprocess import Popen, PIPE
     if 'stderr' not in kwds:
         kwds['stderr'] = PIPE
     proc = Popen(cmd, stdin=PIPE, stdout=PIPE, **kwds)
@@ -122,7 +129,7 @@ def cli_trash():
     prefix = getprefix('trash')
 
 
-def cli_trash_branch(branch, remote):
+def cli_trash_branch(branch, remote, remove_upstream):
     """
     Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
 
@@ -130,18 +137,31 @@ def cli_trash_branch(branch, remote):
       branch named ``trash/$REV[:2]/$REV[2:]``, since the JSON has all
       the info I need.
 
-    - FIXME: remove remote branch.
-
     """
+    branches, checkout = getbranches()
+    if branch == checkout:
+        print("Cannot trash the branch '{0}' which you are currently on."
+              .format(branch))
+        return 1
     prefix = getprefix('trash')
     rev = check_output(['git', 'rev-parse', branch]).strip()
     url = getconfig('remote.{0}.url'.format(remote))
+    if remove_upstream:
+        upstream_repo = getconfig('branch.{0}.remote'.format(branch))
+        upstream_branch = getconfig('branch.{0}.merge'.format(branch))
     info = dict(branch=branch, **getrecinfo())
     heading = 'Trash branch "{branch}" at {host}:{repo}'.format(**info)
     rev = git_json_commit(heading, info, branch)
     check_call(['git', 'push', url, '{0}:refs/heads/{1}/{2}/{3}'
                 .format(rev, prefix, rev[:2], rev[2:])])
     check_call(['git', 'branch', '--delete', '--force', branch])
+
+    if remove_upstream:
+        if upstream_repo is None:
+            print('Not removing upstream branch as upstream is'
+                  ' not configured.')
+        else:
+            check_call(['git', 'push', upstream_repo, ':' + upstream_branch])
 
 
 def cli_trash_stash():
@@ -194,6 +214,8 @@ def make_parser(doc=__doc__):
     p = subp('trash-branch', cli_trash_branch)
     p.add_argument('branch')
     p.add_argument('--remote', default='blackhole')  # FIXME: see above
+    p.add_argument('--remove-upstream', '-u', action='store_true',
+                   help='remove branch in upstream repository.')
 
     return parser
 
@@ -201,7 +223,7 @@ def make_parser(doc=__doc__):
 def main(args=None):
     parser = make_parser()
     ns = parser.parse_args(args)
-    return (lambda func, **kwds: func(**kwds))(**vars(ns))
+    sys.exit((lambda func, **kwds: func(**kwds))(**vars(ns)))
 
 
 if __name__ == '__main__':
