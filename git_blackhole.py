@@ -76,7 +76,7 @@ def check_communicate(cmd, input, **kwds):
     if 'stderr' not in kwds:
         kwds['stderr'] = PIPE
     proc = Popen(cmd, stdin=PIPE, stdout=PIPE, **kwds)
-    if not isinstance(input, bytes):
+    if input is not None and not isinstance(input, bytes):
         input = input.encode()
     (stdout, stderr) = proc.communicate(input)
     if proc.returncode != 0:

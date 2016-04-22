@@ -23,6 +23,12 @@ def test_check_communicate_redirect_stderr():
         stderr=STDOUT, shell=True) == b'<input><stderr>\n'
 
 
+def test_check_communicate_simple_error():
+    with pytest.raises(CalledProcessError) as excinfo:
+        check_communicate('exit 28', None, shell=True)
+    assert excinfo.value.returncode == 28
+
+
 def test_check_communicate_fail_with_stderr():
     with pytest.raises(CalledProcessError) as excinfo:
         check_communicate(cat_stderr_exit6_sh, '<input>', shell=True)
