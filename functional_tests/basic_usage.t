@@ -66,7 +66,7 @@ to remote branch named ``host/$HOST/$RELPATH/HEAD``.::
 
   $ git blackhole push
   To ../blackhole.git
-   * [new branch]      HEAD -> HEAD
+   * [new branch]      HEAD -> host/*/local/HEAD (glob)
 
 Suppose you made a commit and pushed to the remote blackhole::
 
@@ -75,7 +75,7 @@ Suppose you made a commit and pushed to the remote blackhole::
   $ git commit --message 'Second commit' > /dev/null
   $ git blackhole push
   To ../blackhole.git
-     *  HEAD -> HEAD (glob)
+     *  HEAD -> host/*/local/HEAD (glob)
      *  master -> host/*/local/master (glob)
 
 but then decide to change the commit.::
@@ -89,7 +89,7 @@ uses ``git push --force``::
 
   $ git blackhole push
   To ../blackhole.git
-   + * HEAD -> HEAD (forced update) (glob)
+   + * HEAD -> host/*/local/HEAD (forced update) (glob)
    + * master -> host/*/local/master (forced update) (glob)
 
 
@@ -120,7 +120,7 @@ Trashed branch is pushed to remote branch named
 ``trash/$HOST/$RELPATH/$REV[:2]/$REV[2:]``::
 
   $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
-    HEAD
+    host/myhost/local/HEAD
     host/myhost/local/master
     trash/myhost/local/*/* (glob)
   $ b=$(git --git-dir=../blackhole.git branch --list | grep trash/)

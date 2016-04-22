@@ -99,6 +99,7 @@ def cli_init(name, url):
 
 
 def cli_push(verify, remote, verbose):
+    prefix = getprefix('host')
     branches, _checkout = getbranches()
     cmd = ['git', 'push', '--force']
     # --force is necessary due to HEAD:HEAD (except for the first
@@ -109,7 +110,8 @@ def cli_push(verify, remote, verbose):
         cmd.append('--no-verify')
     cmd.append(remote)
     cmd.extend(branches)
-    cmd.append('HEAD:HEAD')
+    # Explicitly specify destination (HEAD:HEAD didn't work):
+    cmd.append('HEAD:refs/heads/{0}/HEAD'.format(prefix))
     if verbose:
         print(*cmd)
     check_call(cmd)
