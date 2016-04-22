@@ -224,11 +224,6 @@ def cli_push(verify, remote, verbose, dry_run):
     run(*cmd)
 
 
-def cli_trash():
-    raise NotImplementedError()
-    prefix = getprefix('trash')
-
-
 def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
     """
     Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
@@ -329,9 +324,6 @@ def make_parser(doc=__doc__):
     p.add_argument('--remote', default='blackhole')
     # FIXME: Stop hard-coding remote name.  Use git config system to
     # set default.
-
-    p = subp('trash', cli_trash)
-    p.add_argument
 
     p = subp('trash-branch', cli_trash_branch)
     p.add_argument('branch')
