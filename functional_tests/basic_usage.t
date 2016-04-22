@@ -113,8 +113,30 @@ Trash ``garbage`` branch::
 
   $ git blackhole trash-branch garbage
   To ../blackhole.git
-   * [new branch]      garbage -> trash/*/local/*/* (glob)
+   * [new branch]      * -> trash/*/local/*/* (glob)
   Deleted branch garbage (was *). (glob)
+
+Trashed branch is pushed to remote branch named
+``trash/$HOST/$RELPATH/$REV[:2]/$REV[2:]``::
+
+  $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
+    HEAD
+    host/myhost/local/master
+    trash/myhost/local/*/* (glob)
+  $ b=$(git --git-dir=../blackhole.git branch --list | grep trash/)
+  $ git --git-dir=../blackhole.git show $b
+  commit * (glob)
+  Author: Test Black-Hole <test@blackhole>
+  Date:   * (glob)
+  
+      GIT-BLACKHOLE: Trash branch "garbage" at * (glob)
+      
+      {*"branch": "garbage"*} (glob)
+
+In the commit message, the heading prefix "GIT-BLACKHOLE:" indicates
+that this commit is made by git-blackhole.  The rest of the heading
+has some human-readable message.  The second line is empty.  The third
+line is JSON hodling some meta-info.
 
 Note that you cannot trash current checked out branch::
 

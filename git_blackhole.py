@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import os
+from socket import gethostname
 from subprocess import check_call, check_output
 
 __version__ = '0.0.0'
@@ -12,11 +13,17 @@ __license__ = None
 
 
 def getprefix(type):
-    from socket import gethostname
     host = gethostname()
     relpath = os.path.relpath(os.getcwd(), os.path.expanduser('~'))
     prefix = '/'.join([type, host, relpath])
     return prefix
+
+
+def getrecinfo():
+    return dict(
+        host=gethostname(),
+        repo=os.getcwd(),
+        git_blackhole=__version__)
 
 
 def getbranches():
@@ -75,6 +82,13 @@ def git_annot_commit(message, parent):
     return rev.decode().rstrip('\n')
 
 
+def git_json_commit(heading, obj, parent):
+    import json
+    return git_annot_commit(
+        "GIT-BLACKHOLE: {}\n\n{}".format(heading, json.dumps(obj)),
+        parent)
+
+
 def cli_init(name, url):
     prefix = getprefix('host')
     check_call(['git', 'remote', 'add', name, url])
@@ -110,14 +124,21 @@ def cli_trash_branch(branch, remote):
     """
     Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
 
-    - FIXME: record branch name somewhere.
+    - FIXME: Maybe I should remove ``$HOST/$RELPATH`` part and use
+      branch named ``trash/$REV[:2]/$REV[2:]``, since the JSON has all
+      the info I need.
+
     - FIXME: remove remote branch.
+
     """
     prefix = getprefix('trash')
     rev = check_output(['git', 'rev-parse', branch]).strip()
     url = getconfig('remote.{0}.url'.format(remote))
-    check_call(['git', 'push', url, '{0}:{1}/{2}/{3}'
-                .format(branch, prefix, rev[:2], rev[2:])])
+    info = dict(branch=branch, **getrecinfo())
+    heading = 'Trash branch "{branch}" at {host}:{repo}'.format(**info)
+    rev = git_json_commit(heading, info, branch)
+    check_call(['git', 'push', url, '{0}:refs/heads/{1}/{2}/{3}'
+                .format(rev, prefix, rev[:2], rev[2:])])
     check_call(['git', 'branch', '--delete', '--force', branch])
 
 
