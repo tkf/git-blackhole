@@ -106,6 +106,12 @@ uses ``git push --force``::
    + * HEAD -> host/*/local/HEAD (forced update) (glob)
    + * master -> host/*/local/master (forced update) (glob)
 
+(BTW, let's not forget to push to the normal repository origin)::
+
+  $ git push origin
+  To ../origin.git
+     *  master -> master (glob)
+
 
 Trash branch
 ============
@@ -119,8 +125,7 @@ Make a new branch which would be trashed later.::
   $ git commit --message 'Garbage commit' > /dev/null
   $ git checkout master
   Switched to branch 'master'
-  Your branch is ahead of 'origin/master' by 1 commit.
-    (use "git push" to publish your local commits)
+  Your branch is up-to-date with 'origin/master'.
   $ git branch --list
     garbage
   * master
@@ -177,8 +182,7 @@ option::
 
   $ git checkout master
   Switched to branch 'master'
-  Your branch is ahead of 'origin/master' by 1 commit.
-    (use "git push" to publish your local commits)
+  Your branch is up-to-date with 'origin/master'.
   $ git blackhole trash-branch --remove-upstream garbage
   To ../blackhole.git
    * [new branch]      * -> trash/*/local/*/* (glob)
@@ -189,10 +193,22 @@ option::
   * master
 
 Note that ``--remove-upstream`` is no-op when upstream repository is
-not set::
+not set.  To show this, let's make garbage branch once again.::
 
-  $ git branch garbage
+  $ git checkout -b garbage
+  Switched to a new branch 'garbage'
+  $ echo change >> README.txt
+  $ git add .
+  $ git commit --message 'Garbage commit' > /dev/null
+  $ git checkout master
+  Switched to branch 'master'
+  Your branch is up-to-date with 'origin/master'.
+
+The last line of the output of ``trash-branch --remove-upstream``
+notify you that any upstream branch is not touched::
+
   $ git blackhole trash-branch --remove-upstream garbage
-  Everything up-to-date
+  To ../blackhole.git
+   * [new branch]      * -> trash/*/local/*/* (glob)
   Deleted branch garbage (was *). (glob)
   Not removing upstream branch as upstream is not configured.
