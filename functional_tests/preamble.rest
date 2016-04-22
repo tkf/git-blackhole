@@ -1,0 +1,37 @@
+
+Some preparation needed for cram test::
+
+  $ export HOME=$PWD
+  $ git config --global user.email "test@blackhole"
+  $ git config --global user.name "Test Black-Hole"
+
+  $ git init --quiet --bare blackhole.git
+  $ git init --quiet --bare origin.git
+  $ git init --quiet local
+  $ cd local/
+
+Useful functions::
+
+  $ commit(){
+  >   change="${1:-change}"
+  >   file="${3:-README.txt}"
+  >   message="${2:-Append '$change' to $file}"
+  >   echo "$change" >> "$file"
+  >   git add "$file"
+  >   git commit --quiet --message "$message" -- "$file"
+  > }
+
+  $ mkbranch(){
+  >     branch="${1:-garbage}"
+  >     shift
+  >     git checkout --quiet -b "$branch"
+  >     commit "$@"
+  >     git checkout --quiet -
+  > }
+
+Add some changes in the local repository::
+
+  $ commit
+  $ git remote add origin ../origin.git
+  $ git push --quiet --set-upstream origin master
+  Branch master set up to track remote branch master from origin.

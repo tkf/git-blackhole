@@ -2,6 +2,8 @@
  Tests for ``--verbose`` and ``--dry-run`` options
 ===================================================
 
+.. [[[cog import cog; cog.outl(open('preamble.rest').read())]]]
+
 Some preparation needed for cram test::
 
   $ export HOME=$PWD
@@ -38,6 +40,8 @@ Add some changes in the local repository::
   $ git remote add origin ../origin.git
   $ git push --quiet --set-upstream origin master
   Branch master set up to track remote branch master from origin.
+
+.. [[[end]]]
 
 
 ``git blackhole init --verbose --dry-run``
