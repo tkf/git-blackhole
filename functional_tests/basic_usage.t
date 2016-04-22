@@ -152,6 +152,7 @@ Trashed branch is pushed to remote branch named
   
       GIT-BLACKHOLE: Trash branch "garbage" at * (glob)
       
+      GIT-BLACKHOLE-JSON:
       {*"branch": "garbage"*} (glob)
 
 In the commit message, the heading prefix "GIT-BLACKHOLE:" indicates
@@ -256,6 +257,7 @@ branch::
   
       GIT-BLACKHOLE: Trash a stash at * (glob)
       
+      GIT-BLACKHOLE-JSON:
       {*"command": "trash-stash"*} (glob)
 
 

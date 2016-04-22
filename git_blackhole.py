@@ -111,7 +111,8 @@ def git_annot_commit(message, parent):
 def git_json_commit(heading, obj, parent):
     import json
     return git_annot_commit(
-        "GIT-BLACKHOLE: {}\n\n{}".format(heading, json.dumps(obj)),
+        "GIT-BLACKHOLE: {}\n\nGIT-BLACKHOLE-JSON:\n{}"
+        .format(heading, json.dumps(obj)),
         parent)
 
 
