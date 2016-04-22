@@ -91,3 +91,34 @@ uses ``git push --force``::
   To ../blackhole.git
    + * HEAD -> HEAD (forced update) (glob)
    + * master -> host/*/local/master (forced update) (glob)
+
+
+Trash branch
+============
+
+Make a new branch which would be trashed later.::
+
+  $ git checkout -b garbage
+  Switched to a new branch 'garbage'
+  $ echo change >> README.txt
+  $ git add .
+  $ git commit --message 'Garbage commit' > /dev/null
+  $ git checkout master
+  Switched to branch 'master'
+  $ git branch --list
+    garbage
+  * master
+
+Trash ``garbage`` branch::
+
+  $ git blackhole trash-branch garbage
+  To ../blackhole.git
+   * [new branch]      garbage -> trash/*/local/*/* (glob)
+  Deleted branch garbage (was *). (glob)
+
+Note that you cannot trash current checked out branch::
+
+  $ git checkout -b garbage
+  Switched to a new branch 'garbage'
+  $ git blackhole trash-branch garbage 2> /dev/null
+  [1]
