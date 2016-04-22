@@ -22,7 +22,8 @@ def getprefix(type):
 def getbranches():
     checkout = None
     branches = []
-    for line in check_output(['git', 'branch', '--list']).splitlines():
+    out = check_output(['git', 'branch', '--list']).decode()
+    for line in out.splitlines():
         br = line.lstrip('*').strip()
         branches.append(br)
         if line.startswith('*'):
