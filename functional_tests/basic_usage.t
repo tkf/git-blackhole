@@ -167,6 +167,10 @@ Note that you cannot trash current checked out branch::
   Cannot trash the branch 'garbage' which you are currently on.
   [1]
 
+
+Upstream branch
+---------------
+
 Suppose the branch to be trashed has upstream repository::
 
   $ git push --set-upstream origin garbage
@@ -197,7 +201,7 @@ not set.  To show this, let's make garbage branch once again.::
 
   $ git checkout -b garbage
   Switched to a new branch 'garbage'
-  $ echo change >> README.txt
+  $ echo another change >> README.txt
   $ git add .
   $ git commit --message 'Garbage commit' > /dev/null
   $ git checkout master
@@ -212,3 +216,77 @@ notify you that any upstream branch is not touched::
    * [new branch]      * -> trash/*/local/*/* (glob)
   Deleted branch garbage (was *). (glob)
   Not removing upstream branch as upstream is not configured.
+
+
+Trash stash
+===========
+
+Stash some commits::
+
+  $ echo change 0 >> README.txt
+  $ git stash
+  Saved working directory and index state WIP on master: * (glob)
+  HEAD is now at * Changed second commit (glob)
+  $ echo change 1 >> README.txt
+  $ git stash
+  Saved working directory and index state WIP on master: * (glob)
+  HEAD is now at * Changed second commit (glob)
+  $ git stash list
+  stash@{0}: WIP on master: * Changed second commit (glob)
+  stash@{1}: WIP on master: * Changed second commit (glob)
+
+
+Trash ``stash@{0}``::
+
+  $ git blackhole trash-stash 0 2>&1 | tee ../stdout
+  To ../blackhole.git
+   * [new branch]      * -> trash/*/local/*/* (glob)
+  Dropped stash@{0} (*) (glob)
+  $ git stash list
+  stash@{0}: WIP on master: * Changed second commit (glob)
+
+Trashed branch is pushed to remote branch as in the case of trashing
+branch::
+
+  $ b=$(sed -rn 's#.*(trash/[^ ]*).*#\1#p' ../stdout)
+  $ git --git-dir=../blackhole.git show $b
+  commit * (glob)
+  Author: Test Black-Hole <test@blackhole>
+  Date:   * (glob)
+  
+      GIT-BLACKHOLE: Trash a stash at * (glob)
+      
+      {*"command": "trash-stash"*} (glob)
+
+
+Stash range
+-----------
+
+Suppose there are many stashes::
+
+  $ for i in $(seq 10)
+  > do
+  >   echo change $i >> README.txt
+  >   git stash save --quiet "Stash No.$i"
+  > done
+  $ git stash list
+  stash@{0}: On master: Stash No.10
+  stash@{1}: On master: Stash No.9
+  stash@{2}: On master: Stash No.8
+  stash@{3}: On master: Stash No.7
+  stash@{4}: On master: Stash No.6
+  stash@{5}: On master: Stash No.5
+  stash@{6}: On master: Stash No.4
+  stash@{7}: On master: Stash No.3
+  stash@{8}: On master: Stash No.2
+  stash@{9}: On master: Stash No.1
+  stash@{10}: WIP on master: * Changed second commit (glob)
+
+Then passing range of stash comes in handy::
+
+  $ git blackhole trash-stash 0,3-5,8- >../stdout 2>&1
+  $ git stash list
+  stash@{0}: On master: Stash No.9
+  stash@{1}: On master: Stash No.8
+  stash@{2}: On master: Stash No.4
+  stash@{3}: On master: Stash No.3

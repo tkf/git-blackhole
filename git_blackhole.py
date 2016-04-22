@@ -96,6 +96,77 @@ def git_json_commit(heading, obj, parent):
         parent)
 
 
+def trash_commitish(commitish, remote, info, headingtemp):
+    """
+    Push `commitish` to `remote` trash.
+    """
+    prefix = getprefix('trash')
+    rev = check_output(['git', 'rev-parse', commitish]).strip()
+    url = getconfig('remote.{0}.url'.format(remote))
+    info = dict(info, **getrecinfo())
+    heading = headingtemp.format(**info)
+    rev = git_json_commit(heading, info, commitish)
+    check_call(['git', 'push', url, '{0}:refs/heads/{1}/{2}/{3}'
+                .format(rev, prefix, rev[:2], rev[2:])])
+
+
+def git_stash_list():
+    output = check_output(
+        ["git", "stash", "list", "--format=%gD %H"])
+    # man git-log > PRETTY FORMATS
+    return output.decode().splitlines()
+
+
+def parse_stash(line):
+    (reflog_selector, commit_hash) = line.split()
+    num = int(reflog_selector.lstrip('refs/stash@{').rstrip('}'))
+    return (num, reflog_selector, commit_hash)
+
+
+def parse_range(stash_range):
+    """
+    Parse stash range syntax
+
+    >>> in_range = parse_range('0, 3-5, 8-')
+    >>> for i in range(11):
+    ...     print('{0} {1}'.format(i, in_range(i)))
+    0 True
+    1 False
+    2 False
+    3 True
+    4 True
+    5 True
+    6 False
+    7 False
+    8 True
+    9 True
+    10 True
+
+    """
+
+    def minmax(raw):
+        if '-' in raw:
+            (low, high) = map(str.strip, raw.split('-'))
+            return (int(low) if low else 0,
+                    int(high) if high else None)
+        else:
+            return (int(raw), int(raw))
+
+    def in_range(num):
+        for (low, high) in ranges:
+            if high is None and low <= num:
+                return True
+            elif low <= num <= high:
+                return True
+        return False
+
+    if stash_range:
+        ranges = list(map(minmax, stash_range.split(',')))
+        return in_range
+    else:
+        return lambda _: True
+
+
 def cli_init(name, url):
     prefix = getprefix('host')
     check_call(['git', 'remote', 'add', name, url])
@@ -143,17 +214,12 @@ def cli_trash_branch(branch, remote, remove_upstream):
         print("Cannot trash the branch '{0}' which you are currently on."
               .format(branch))
         return 1
-    prefix = getprefix('trash')
-    rev = check_output(['git', 'rev-parse', branch]).strip()
-    url = getconfig('remote.{0}.url'.format(remote))
     if remove_upstream:
         upstream_repo = getconfig('branch.{0}.remote'.format(branch))
         upstream_branch = getconfig('branch.{0}.merge'.format(branch))
-    info = dict(branch=branch, **getrecinfo())
-    heading = 'Trash branch "{branch}" at {host}:{repo}'.format(**info)
-    rev = git_json_commit(heading, info, branch)
-    check_call(['git', 'push', url, '{0}:refs/heads/{1}/{2}/{3}'
-                .format(rev, prefix, rev[:2], rev[2:])])
+    trash_commitish(
+        branch, remote, dict(command='trash-branch', branch=branch),
+        'Trash branch "{branch}" at {host}:{repo}')
     check_call(['git', 'branch', '--delete', '--force', branch])
 
     if remove_upstream:
@@ -164,8 +230,27 @@ def cli_trash_branch(branch, remote, remove_upstream):
             check_call(['git', 'push', upstream_repo, ':' + upstream_branch])
 
 
-def cli_trash_stash():
-    raise NotImplementedError()
+def cli_trash_stash(remote, stash_range, keep_stashes):
+    in_range = parse_range(stash_range)
+    stashes = [s for s in map(parse_stash, git_stash_list())
+               if in_range(s[0])]
+
+    if not stashes:
+        print('No stash is found.')
+        return
+
+    # Using "git stash drop stash@{SHA1}" is unreliable because
+    # sometime git confuses SHA1 with date (e.g., SHA1 could starts
+    # with "1d").  So "stash@{N}" must be used.  However, "N" would
+    # change if newer stashes are popped.  Hence `reversed`.
+    for (num, raw, sha1) in reversed(stashes):
+        if in_range(num):
+            stash = 'stash@{{{0}}}'.format(num)
+            trash_commitish(
+                sha1, remote, dict(command='trash-stash'),
+                'Trash a stash at {host}:{repo}')
+            if not keep_stashes:
+                check_call(['git', 'stash', 'drop', stash])
 
 
 def make_parser(doc=__doc__):
@@ -208,14 +293,21 @@ def make_parser(doc=__doc__):
     p = subp('trash', cli_trash)
     p.add_argument
 
-    p = subp('trash-stash', cli_trash_stash)
-    p.add_argument
-
     p = subp('trash-branch', cli_trash_branch)
     p.add_argument('branch')
     p.add_argument('--remote', default='blackhole')  # FIXME: see above
     p.add_argument('--remove-upstream', '-u', action='store_true',
                    help='remove branch in upstream repository.')
+
+    p = subp('trash-stash', cli_trash_stash)
+    p.add_argument('--remote', default='blackhole')  # FIXME: see above
+    p.add_argument(
+        'stash_range',
+        help='stashes to trash. It is comma-separated low-high range'
+        ' (inclusive). e.g.: 0,3-5,8-')
+    p.add_argument(
+        '--keep-stashes', '-k', default=False, action='store_true',
+        help='when this option is given, do not remove local stashes.')
 
     return parser
 
