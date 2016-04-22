@@ -31,7 +31,14 @@ class MixInGitRepos(MixInTemporaryDirectory):
 
     def setUp(self):
         super(MixInGitRepos, self).setUp()
+
         for repo in self.repos:
             subprocess.check_call(['git', 'init'] + (
                 ['--bare'] if repo.endswith('.git') else []
             ) + [repo], cwd=self.tmpdir)
+
+            for cmd in [
+                    ['git', 'config', 'user.email', 'test@blackhole'],
+                    ['git', 'config', 'user.name', 'Test Black-Hole'],
+            ]:
+                subprocess.check_call(cmd, cwd=self.tmppath(repo))

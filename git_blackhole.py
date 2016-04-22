@@ -38,6 +38,43 @@ def getconfig(name, aslist=False):
     return out.split('\0')[:-1] if aslist else out.rstrip('\0')
 
 
+def check_communicate(cmd, input, **kwds):
+    from subprocess import Popen, PIPE, CalledProcessError
+    if 'stderr' not in kwds:
+        kwds['stderr'] = PIPE
+    proc = Popen(cmd, stdin=PIPE, stdout=PIPE, **kwds)
+    if not isinstance(input, bytes):
+        input = input.encode()
+    (stdout, stderr) = proc.communicate(input)
+    if proc.returncode != 0:
+        output = stdout if stderr is None else stderr
+        raise CalledProcessError(proc.returncode, cmd, output)
+    return stdout
+
+
+def git_annot_commit(message, parent):
+    """
+    Make a commit with `message` on top of `parent` commit.
+
+    This is "annotation commit" in a sense that it does not add change
+    to `parent` version.  It just adds a commit with a message which
+    can contain additional information (annotation) about `parent`
+    commit.
+
+    See:
+
+    * https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+    * man git-rev-parse
+    * man git-commit-tree
+
+    """
+    tree = check_output(['git', 'rev-parse', '{0}^{{tree}}'.format(parent)])
+    tree = tree.decode().rstrip('\n')
+    rev = check_communicate(['git', 'commit-tree', tree, '-p', parent],
+                            message)
+    return rev.decode().rstrip('\n')
+
+
 def cli_init(name, url):
     prefix = getprefix('host')
     check_call(['git', 'remote', 'add', name, url])
