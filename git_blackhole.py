@@ -65,6 +65,13 @@ def getconfig(name, aslist=False):
 
 
 def check_communicate(cmd, input, **kwds):
+    """
+    Run ``Popen(cmd, **kwds).communicate(input)`` and bark on an error.
+
+    >>> check_communicate(['cat'], 'hey') == b'hey'
+    True
+
+    """
     from subprocess import Popen, PIPE
     if 'stderr' not in kwds:
         kwds['stderr'] = PIPE
@@ -133,6 +140,13 @@ def git_stash_list():
 
 
 def parse_stash(line):
+    """
+    Parse a line of `git_stash_list` output.
+
+    >>> parse_stash('refs/stash@{0} 29453bf380ff2e3aabf932a08287a162bc12d218')
+    (0, 'refs/stash@{0}', '29453bf380ff2e3aabf932a08287a162bc12d218')
+
+    """
     (reflog_selector, commit_hash) = line.split()
     num = int(reflog_selector.lstrip('refs/stash@{').rstrip('}'))
     return (num, reflog_selector, commit_hash)
