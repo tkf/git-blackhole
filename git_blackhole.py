@@ -216,14 +216,14 @@ def cli_init(name, url, verbose, dry_run):
 
 def cli_push(verify, remote, verbose, dry_run):
     """
-    Push branches and HEAD to blackhole `remote`.
+    Push branches and HEAD forcefully to blackhole `remote`.
     """
     run = make_run(verbose, dry_run)
     prefix = getprefix('host')
     branches, _checkout = getbranches()
+
+    # Build "git push" command options:
     cmd = ['git', 'push', '--force']
-    # --force is necessary due to HEAD:HEAD (except for the first
-    # invocation of this command)
     if verify is True:
         cmd.append('--verify')
     elif verify is False:
@@ -232,6 +232,7 @@ def cli_push(verify, remote, verbose, dry_run):
     cmd.extend(branches)
     # Explicitly specify destination (HEAD:HEAD didn't work):
     cmd.append('HEAD:refs/heads/{0}/HEAD'.format(prefix))
+
     run(*cmd)
 
 
