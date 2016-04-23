@@ -2,7 +2,8 @@
  git-blackhole 1
 =================
 
-:subtitle: the repository swallows everything
+:title: git-blackhole
+:subtitle: where you can throw everything to
 :manual_group: Git blackhole manual
 
 Synopsis
