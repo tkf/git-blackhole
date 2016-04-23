@@ -9,7 +9,8 @@ commands="$(./git-blackhole --help \
 | grep .)"
 
 extract-doc(){
-    awk '/[a-z]+ arguments/{flag=0}; flag{ print }; (NF == 0){flag=1}'
+    awk '/[a-z]+ arguments/{flag=0}; flag{ print }; (NF == 0){flag=1}' \
+        | sed -r 's/ +$//'
 }
 
 extract-desc-body(){
