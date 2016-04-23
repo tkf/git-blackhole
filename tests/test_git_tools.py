@@ -2,7 +2,7 @@ import unittest
 from subprocess import check_call, check_output
 
 from .testutils import MixInGitRepoPerClass, MixInGitRepoPerMethod
-from git_blackhole import getconfig, git_annot_commit
+from git_blackhole import getconfig, getbranches, git_annot_commit
 
 
 def commitchange(file='README', change='change',
@@ -39,3 +39,14 @@ class TestGitTools(MixInGitRepoPerMethod, unittest.TestCase):
         rev = git_annot_commit('Annotate newbranch', 'newbranch')
         out = check_output(['git', 'show', rev])
         assert b'Annotate newbranch' in out
+
+    def test_getbranches(self):
+        commitchange()
+        assert getbranches() == (['master'], 'master')
+
+        newbranches = list(map('br{}'.format, range(10)))
+        for b in newbranches:
+            check_call(['git', 'branch', b])
+
+        check_call(['git', 'checkout', newbranches[2]])
+        assert getbranches() == (newbranches + ['master'], newbranches[2])
