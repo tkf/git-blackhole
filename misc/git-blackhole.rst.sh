@@ -12,6 +12,10 @@ extract-doc(){
     awk '/[a-z]+ arguments/{flag=0}; flag{ print }; (NF == 0){flag=1}'
 }
 
+extract-desc-body(){
+    extract-doc | extract-doc
+}
+
 extract-options(){
     grep -v ' --help' \
         | awk 'flag{ print }; /optional arguments:/{flag=1}' \
@@ -25,6 +29,8 @@ echo
 echo "Description"
 echo "==========="
 echo
+
+./git-blackhole --help | extract-desc-body
 
 for cmd in $commands
 do
