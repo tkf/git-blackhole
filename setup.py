@@ -1,5 +1,9 @@
 try:
     from setup_git_blackhole import setup
+    # This setup.py should work without setup_git_blackhole.py when it
+    # is distributed.  The helper module setup_git_blackhole.py is
+    # there to automatically generate data files before making
+    # distributions.
 except ImportError:
     from distutils.core import setup
 
