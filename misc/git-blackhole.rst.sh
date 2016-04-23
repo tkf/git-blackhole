@@ -50,7 +50,7 @@ do
     echo ------------------------------
     ./git-blackhole $cmd --help | extract-options
     echo
+    echo
 done
 
-echo
 cat $post
