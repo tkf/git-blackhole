@@ -1,23 +1,29 @@
-PROJECT = git_blackhole
+PYTHON = python
 
-.PHONY: test clean clean-pycache cog upload
+.PHONY: test clean clean-man upload
 
 ## Testing
-test: cog
+test:
 	tox
 
-clean: clean-pycache
-	rm -rf *.egg-info .tox MANIFEST
+test-man: clean-man
+	${PYTHON} setup.py generate_man
+	test -e git-blackhole.1
+	test -e git-blackhole-basic-usage.5
 
-clean-pycache:
-	find $(PROJECT) -name __pycache__ -o -name '*.pyc' -print0 \
-		| xargs --null rm -rf
+clean: clean-man
+	rm -rf *.pyc __pycache__ build dist *.egg-info .tox MANIFEST
 
-## Update files using cog.py
-cog: $(PROJECT)/__init__.py
-$(PROJECT)/__init__.py: README.rst
-	cd $(PROJECT) && cog.py -r __init__.py
+clean-man:
+	rm -f git-blackhole.1 git-blackhole-basic-usage.5
+
+## Man
+preview-git-blackhole.1 preview-git-blackhole-basic-usage.5: preview-%:
+	misc/$*.sh - | man --local-file -
+
+preview-git-blackhole.rst preview-git-blackhole-basic-usage.rst: preview-%:
+	misc/$*.sh - | pygmentize -l rst | less -R
 
 ## Upload to PyPI
-upload: cog
+upload:
 	python setup.py register sdist upload
