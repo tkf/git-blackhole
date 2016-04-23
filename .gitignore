@@ -5,3 +5,6 @@
 /MANIFEST
 /dist
 /doc/build
+
+git-blackhole-basic-usage.5
+git-blackhole.1

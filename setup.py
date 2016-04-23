@@ -1,11 +1,19 @@
-from distutils.core import setup
+try:
+    from setup_git_blackhole import setup
+except ImportError:
+    from distutils.core import setup
 
 import git_blackhole
+
 
 setup(
     name='git_blackhole',
     version=git_blackhole.__version__,
     py_modules=['git_blackhole'],
+    data_files=[
+        ('man/man1', ['git-blackhole.1']),
+        ('man/man5', ['git-blackhole-basic-usage.5']),
+    ],
     author=git_blackhole.__author__,
     author_email='aka.tkf@gmail.com',
     # url='https://github.com/tkf/git_blackhole',
