@@ -1,5 +1,11 @@
-# [[[cog import cog; cog.outl('"""\n%s\n"""' % file('README.rst').read())]]]
-# [[[end]]]
+"""
+Connecting your repository to the blackhole which can swallow everything.
+
+The aim of ``git-blackhole`` is to connect any of your repositories to
+a single repository to which you can throw everything --- WIP commits,
+branches no longer needed, and useless stashes.
+
+"""
 
 from __future__ import print_function
 
@@ -239,11 +245,11 @@ def cli_push(verify, remote, verbose, dry_run):
 def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
     """
     Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
-
+    """
+    """
     - FIXME: Maybe I should remove ``$HOST/$RELPATH`` part and use
       branch named ``trash/$REV[:2]/$REV[2:]``, since the JSON has all
       the info I need.
-
     """
     run = make_run(verbose, dry_run)
     branches, checkout = getbranches()
@@ -330,24 +336,32 @@ def make_parser(doc=__doc__):
         return p
 
     p = subp('init', cli_init)
-    p.add_argument('--name', default='blackhole')
-    p.add_argument('url')
+    p.add_argument('--name', default='blackhole',
+                   help='name of the remote blackhole repository')
+    p.add_argument('url',
+                   help='URL of the remote blackhole repository')
 
     p = subp('push', cli_push)
-    p.add_argument('--verify', default=None, action='store_true')
-    p.add_argument('--no-verify', dest='verify', action='store_false')
-    p.add_argument('--remote', default='blackhole')
+    p.add_argument('--verify', default=None, action='store_true',
+                   help='passed to git-push')
+    p.add_argument('--no-verify', dest='verify', action='store_false',
+                   help='passed to git-push')
+    p.add_argument('--remote', default='blackhole',
+                   help='name of the remote blackhole repository')
     # FIXME: Stop hard-coding remote name.  Use git config system to
     # set default.
 
     p = subp('trash-branch', cli_trash_branch)
-    p.add_argument('branch')
-    p.add_argument('--remote', default='blackhole')  # FIXME: see above
+    p.add_argument('branch',
+                   help='branch to be removed')
+    p.add_argument('--remote', default='blackhole',  # FIXME: see above
+                   help='name of the remote blackhole repository')
     p.add_argument('--remove-upstream', '-u', action='store_true',
                    help='remove branch in upstream repository.')
 
     p = subp('trash-stash', cli_trash_stash)
-    p.add_argument('--remote', default='blackhole')  # FIXME: see above
+    p.add_argument('--remote', default='blackhole',  # FIXME: see above
+                   help='name of the remote blackhole repository')
     p.add_argument(
         'stash_range',
         help='stashes to trash. It is comma-separated low-high range'
