@@ -2,7 +2,8 @@ import unittest
 from subprocess import check_call, check_output
 
 from .testutils import MixInGitRepoPerClass, MixInGitRepoPerMethod
-from git_blackhole import getconfig, getbranches, git_annot_commit
+from git_blackhole import getconfig, getbranches, \
+    git_stash_list, parse_stash, git_annot_commit
 
 
 def commitchange(file='README', change='change',
@@ -50,3 +51,18 @@ class TestGitTools(MixInGitRepoPerMethod, unittest.TestCase):
 
         check_call(['git', 'checkout', newbranches[2]])
         assert getbranches() == (newbranches + ['master'], newbranches[2])
+
+    def test_parse_stashes(self):
+        commitchange()
+
+        num = 10
+        for i in range(num):
+            with open('README', 'w') as f:
+                f.write('change {0}'.format(i))
+            check_call(['git', 'stash'])
+
+        stashes = list(map(parse_stash, git_stash_list()))
+        assert len(stashes) == num
+        assert [s[0] for s in stashes] == list(range(num))
+        assert [s[1] for s in stashes] == \
+            list(map('refs/stash@{{{0}}}'.format, range(num)))
