@@ -210,6 +210,17 @@ def parse_range(stash_range):
 def cli_init(name, url, verbose, dry_run):
     """
     Add blackhole remote at `url` with `name`.
+
+    This command runs ``git remote add <name> <url>`` and configure
+    appropriate `remote.<name>.fetch` and `remote.<name>.pushe`
+    properties so that remote blackhole repository at `url` acts
+    as if it is a yet another remote repository.
+
+    To be more precise, each local branch is related to the branch at
+    the blackhole remote with the prefix ``host/$HOST/$RELPATH/``
+    where ``$HOST`` is the name of local machine and ``$RELPATH`` is
+    the path of the repository relative to ``$HOME``.
+
     """
     run = make_run(verbose, dry_run)
     prefix = getprefix('host')
@@ -223,6 +234,16 @@ def cli_init(name, url, verbose, dry_run):
 def cli_push(verify, remote, verbose, dry_run):
     """
     Push branches and HEAD forcefully to blackhole `remote`.
+
+    Note that local HEAD is pushed to the remote branch named
+    ``host/$HOST/$RELPATH/HEAD`` (see help of ``git blackhole init``)
+    instead of real remote HEAD.  This way, if the blackhole remote is
+    shared with other machine, you can recover the HEAD at ``$HOST``.
+
+    It is useful to call this command from the ``post-commit`` hook::
+
+      nohup git blackhole push --no-verify &> /dev/null &
+
     """
     run = make_run(verbose, dry_run)
     prefix = getprefix('host')
@@ -244,7 +265,20 @@ def cli_push(verify, remote, verbose, dry_run):
 
 def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
     """
-    Push `branch` to trash/$HOST/$RELPATH/$SHA1 and remove `branch` locally.
+    [EXPERIMENTAL] Save `branch` in blackhole `remote` before deletion.
+
+    The `branch` is pushed to the branch of the blackhole `remote`
+    named ``trash/$HOST/$RELPATH/$SHA1[:2]/$SHA1[2:]`` where ``$HOST``
+    is the name of local machine, ``$RELPATH`` is the path of the
+    repository relative to ``$HOME``, and ``$SHA1`` is the revision of
+    the commit.  (To be more precise, ``$SHA`` is the revision of the
+    commit recording the revision of `branch` and some meta
+    information).
+
+    .. WARNING:: Currently, there is no commands to help retrieving
+       trashed branches.  You have to do it manually using standard
+       git commands.
+
     """
     """
     - FIXME: Maybe I should remove ``$HOST/$RELPATH`` part and use
@@ -277,7 +311,18 @@ def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
 def cli_trash_stash(remote, stash_range, keep_stashes,
                     verbose, dry_run):
     """
-    Push stashes to trash/$HOST/$RELPATH/$SHA1 and remove them locally.
+    [EXPERIMENTAL] Save stashes in blackhole `remote` before deletion.
+
+    It works as (almost) the same way as ``git blackhole trash-branch``.
+
+    Several stashes can be specified in `stash_range`.  It takes
+    single numbers (e.g., 3) and ranges (e.g., 3-5 or 8-) separated by
+    commas.  Each range is in the form ``x-y`` which selects stashes
+    ``x, x+1, x+2, ..., y``.  The upper limit ``y`` can be omitted,
+    meaning "until the last stash".  For example, when you have
+    stashes 0 to 10, ``git blackhole trash-stash 0,3-5,8-`` removes
+    stashes 0, 3, 4, 5, 8, 9, and 10.
+
     """
     run = make_run(verbose, dry_run)
     in_range = parse_range(stash_range)
