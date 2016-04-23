@@ -1,5 +1,8 @@
 #!/bin/bash
 
+pre=${1:-misc/man-pre.rst}
+post=${2:-misc/man-post.rst}
+
 commands="$(./git-blackhole --help \
 | grep -A1 'positional arguments' \
 | tail -n1 | sed -r 's/[^-a-z]/\n/g' \
@@ -16,7 +19,7 @@ extract-options(){
         | sed -r 's/^-/\n-/'
 }
 
-cat misc/man-pre.rst
+cat $pre
 echo
 
 echo "Description"
@@ -43,4 +46,4 @@ do
 done
 
 echo
-cat misc/man-post.rst
+cat $post
