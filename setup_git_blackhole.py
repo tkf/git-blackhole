@@ -17,10 +17,7 @@ class generate_man(Command):
         pass
 
     def run(self):
-        self.spawn([
-            'rst2man.py',
-            'README.rst',
-            'git-blackhole.1'])
+        self.spawn(['misc/git-blackhole.1.sh'])
         self.spawn([
             'rst2man.py',
             'functional_tests/basic_usage.t',
