@@ -18,10 +18,7 @@ class generate_man(Command):
 
     def run(self):
         self.spawn(['misc/git-blackhole.1.sh'])
-        self.spawn([
-            'rst2man.py',
-            'functional_tests/basic_usage.t',
-            'git-blackhole-basic-usage.5'])
+        self.spawn(['misc/git-blackhole-basic-usage.5.sh'])
 
 
 class build(distutils.command.build.build):

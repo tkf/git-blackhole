@@ -2,13 +2,6 @@
  Basic usage
 =============
 
-:title: git-blackhole-basic-usage
-:subtitle: Examples
-:title_upper: GIT-BLACKHOLE-BASIC-USAGE
-:manual_section: 5
-:manual_group: Git blackhole manual
-
-
 Preparation
 ===========
 
