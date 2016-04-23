@@ -1,0 +1,3 @@
+# Manually include git-blackhole for the case sdist is done with
+# setuptools and install is done with distutils.
+include git-blackhole
