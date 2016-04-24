@@ -1,10 +1,11 @@
 try:
-    from setuptools import setup as setup_orig
+    from setuptools import setup as setup_orig, Distribution, Command
 except ImportError:
-    from distutils.core import setup as setup_orig
-from distutils.cmd import Command
-import distutils.command.build
-import distutils.command.sdist
+    from distutils.core import setup as setup_orig, Distribution, Command
+
+dist = Distribution()
+build_orig = dist.get_command_class('build')
+sdist_orig = dist.get_command_class('sdist')
 
 
 class generate_man(Command):
@@ -24,18 +25,18 @@ class generate_man(Command):
         self.spawn(['misc/git-blackhole-basic-usage.5.sh'])
 
 
-class build(distutils.command.build.build):
+class build(build_orig):
 
     sub_commands = [
         ('generate_man', None),
-    ] + distutils.command.build.build.sub_commands
+    ] + build_orig.sub_commands
 
 
-class sdist(distutils.command.sdist.sdist):
+class sdist(sdist_orig):
 
     sub_commands = [
         ('generate_man', None),
-    ] + distutils.command.sdist.sdist.sub_commands
+    ] + sdist_orig.sub_commands
 
 # See also:
 # distutils.cmd.get_sub_commands
