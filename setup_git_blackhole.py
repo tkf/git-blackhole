@@ -27,16 +27,16 @@ class generate_man(Command):
 
 class build(build_orig):
 
-    sub_commands = [
-        ('generate_man', None),
-    ] + build_orig.sub_commands
+    def run(self):
+        self.run_command('generate_man')
+        build_orig.run(self)
 
 
 class sdist(sdist_orig):
 
-    sub_commands = [
-        ('generate_man', None),
-    ] + sdist_orig.sub_commands
+    def run(self):
+        self.run_command('generate_man')
+        sdist_orig.run(self)
 
 # See also:
 # distutils.cmd.get_sub_commands
