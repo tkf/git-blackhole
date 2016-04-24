@@ -11,7 +11,7 @@ import git_blackhole
 
 
 setup(
-    name='git_blackhole',
+    name='git-blackhole',
     version=git_blackhole.__version__,
     py_modules=['git_blackhole'],
     data_files=[
