@@ -1,7 +1,10 @@
+try:
+    from setuptools import setup as setup_orig
+except ImportError:
+    from distutils.core import setup as setup_orig
 from distutils.cmd import Command
 import distutils.command.build
 import distutils.command.sdist
-import distutils.core
 
 
 class generate_man(Command):
@@ -40,7 +43,7 @@ class sdist(distutils.command.sdist.sdist):
 
 
 def setup(**kwds):
-    distutils.core.setup(
+    setup_orig(
         cmdclass={
             'build': build,
             'sdist': sdist,

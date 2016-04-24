@@ -29,10 +29,12 @@ setup(
         "Development Status :: 3 - Alpha",
         # see: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     ],
-    install_requires=[
-        # 'SOME_PACKAGE',
-    ],
+    # Having `entry_points` only yields warning for `distutils.core`
+    # so let's have it here:
     entry_points={
         'console_scripts': ['git-blackhole = git_blackhole:main'],
     },
+    # Since `entry_points` works only with setuptools/pip, use
+    # `scripts` as a fall-back:
+    scripts=['git-blackhole'],
 )
