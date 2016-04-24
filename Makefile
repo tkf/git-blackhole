@@ -1,9 +1,9 @@
 PYTHON = python
 
-.PHONY: test clean clean-man upload
+.PHONY: test clean* test* upload
 
 ## Testing
-test:
+test: test-man test-sdist-man
 	tox
 
 test-man: clean-man
@@ -11,8 +11,17 @@ test-man: clean-man
 	test -e git-blackhole.1
 	test -e git-blackhole-basic-usage.5
 
-clean: clean-man
-	rm -rf *.pyc __pycache__ build dist *.egg-info .tox MANIFEST
+test-sdist-man: clean-man clean-notox
+	${PYTHON} setup.py sdist
+	[ $$(ls -1 dist/*.tar.gz | wc -l) = 1 ]
+	tar tzf dist/*.tar.gz | grep '/git-blackhole\.1$$'
+	tar tzf dist/*.tar.gz | grep '/git-blackhole-basic-usage\.5$$'
+
+clean: clean-man clean-notox
+	rm -rf .tox
+
+clean-notox:
+	rm -rf *.pyc __pycache__ build dist *.egg-info MANIFEST
 
 clean-man:
 	rm -f git-blackhole.1 git-blackhole-basic-usage.5
