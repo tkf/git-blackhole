@@ -15,8 +15,8 @@ setup(
     version=git_blackhole.__version__,
     py_modules=['git_blackhole'],
     data_files=[
-        ('man/man1', ['git-blackhole.1']),
-        ('man/man5', ['git-blackhole-basic-usage.5']),
+        ('share/man/man1', ['git-blackhole.1']),
+        ('share/man/man5', ['git-blackhole-basic-usage.5']),
     ],
     author=git_blackhole.__author__,
     author_email='aka.tkf@gmail.com',
