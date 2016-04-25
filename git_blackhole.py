@@ -11,14 +11,16 @@ from __future__ import print_function
 
 import os
 import sys
-from subprocess import check_call, check_output, CalledProcessError
+from subprocess import check_output, CalledProcessError
 
 __version__ = '0.0.0'
 __author__ = 'Takafumi Arakaki'
 __license__ = None
 
 
-def make_run(verbose, dry_run):
+def make_run(verbose, dry_run, check=True):
+    from subprocess import check_call, call
+
     def run(*command, **kwds):
         if verbose:
             redirects = ()
@@ -27,7 +29,7 @@ def make_run(verbose, dry_run):
             print(' '.join(command + redirects))
             sys.stdout.flush()
         if not dry_run:
-            check_call(command, **kwds)
+            return (check_call if check else call)(command, **kwds)
     return run
 
 
@@ -245,7 +247,7 @@ def cli_push(verify, remote, verbose, dry_run):
       nohup git blackhole push --no-verify &> /dev/null &
 
     """
-    run = make_run(verbose, dry_run)
+    run = make_run(verbose, dry_run, check=False)
     prefix = getprefix('host')
     branches, _checkout = getbranches()
 
@@ -260,7 +262,7 @@ def cli_push(verify, remote, verbose, dry_run):
     # Explicitly specify destination (HEAD:HEAD didn't work):
     cmd.append('HEAD:refs/heads/{0}/HEAD'.format(prefix))
 
-    run(*cmd)
+    return run(*cmd)
 
 
 def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):

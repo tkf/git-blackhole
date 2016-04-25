@@ -60,6 +60,24 @@ Running ``git blackhole init`` at non-root should work.::
   	fetch = +refs/heads/host/myhost/local/*:refs/remotes/blackhole/*
   	push = +refs/heads/*:host/myhost/local/*
 
+``git blackhole push``
+======================
+
+``git blackhole push`` can take ``--no-verify``::
+
+  $ ln -s /bin/false .git/hooks/pre-push
+  $ git push --quiet origin master
+  error: failed to push some refs to '../origin.git'
+  [1]
+  $ git blackhole push
+  error: failed to push some refs to '../blackhole.git'
+  [1]
+  $ git blackhole push --no-verify
+  To ../blackhole.git
+   * [new branch]      master -> host/*/local/master (glob)
+   * [new branch]      HEAD -> host/*/local/HEAD (glob)
+  $ rm .git/hooks/pre-push
+
 
 ``git blackhole trash-branch``
 ==============================
