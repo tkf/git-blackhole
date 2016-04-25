@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Usage:
+#   ln -svi ../../misc/pre-commit .git/hooks/
+
+if grep $(hostname) functional_tests/*.t
+then
+    cat <<EOF 1>&2
+Error: Your hostname is included in functional_tests/*.t file.
+
+Do not include it to make the tests work everywhere.
+EOF
+    exit 1
+fi
