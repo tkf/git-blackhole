@@ -108,7 +108,7 @@ uses ``git push --force``::
 
 (BTW, let's not forget to push to the normal repository origin)::
 
-  $ git push origin
+  $ git push origin master
   To ../origin.git
      *  master -> master (glob)
 
