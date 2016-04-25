@@ -16,9 +16,9 @@ __license__ = None
 def make_run(verbose, dry_run):
     def run(*command, **kwds):
         if verbose:
-            redirects = []
+            redirects = ()
             if 'stdout' in kwds:
-                redirects = ['>', kwds['stdout'].name]
+                redirects = ('>', kwds['stdout'].name)
             print(' '.join(command + redirects))
         if not dry_run:
             check_call(command, **kwds)
