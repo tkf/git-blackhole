@@ -106,6 +106,22 @@ uses ``git push --force``::
    + * HEAD -> host/*/local/HEAD (forced update) (glob)
    + * master -> host/*/local/master (forced update) (glob)
 
+``git blackhole push`` command pushes stashes as well::
+
+  $ echo change >> README.txt
+  $ git stash
+  Saved working directory and index state WIP on master: * (glob)
+  HEAD is now at * (glob)
+  $ git blackhole push
+  To ../blackhole.git
+   * [new branch]      stash@{0} -> stash/*/local/0 (glob)
+  $ git stash drop
+  Dropped refs/stash@{0} (*) (glob)
+  $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
+    host/myhost/local/HEAD
+    host/myhost/local/master
+    stash/myhost/local/0
+
 (BTW, let's not forget to push to the normal repository origin)::
 
   $ git push origin master
@@ -143,6 +159,7 @@ Trashed branch is pushed to remote branch named
   $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
     host/myhost/local/HEAD
     host/myhost/local/master
+    stash/myhost/local/0
     trash/myhost/local/*/* (glob)
   $ b=$(git --git-dir=../blackhole.git branch --list | grep trash/)
   $ git --git-dir=../blackhole.git show $b

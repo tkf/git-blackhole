@@ -33,8 +33,8 @@ def make_run(verbose, dry_run, check=True):
     return run
 
 
-def getprefix(type):
-    info = getrecinfo()
+def getprefix(type, info=None):
+    info = info or getrecinfo()
     return '{type}/{host}/{relpath}'.format(
         relpath=os.path.relpath(info['repo'], os.path.expanduser('~')),
         type=type,
@@ -209,6 +209,24 @@ def parse_range(stash_range):
         return lambda _: True
 
 
+def refspecs_for_stashes(num, info=None):
+    """
+    Compile refspecs for stashes and and return as a list strings.
+
+    >>> refspecs_for_stashes(3, info=dict(
+    ...     host='myhost',
+    ...     repo=os.path.join(os.path.expanduser('~'), 'local/repo'),
+    ... ))                                 # doctest: +NORMALIZE_WHITESPACE
+    ['stash@{0}:refs/heads/stash/myhost/local/repo/0',
+     'stash@{1}:refs/heads/stash/myhost/local/repo/1',
+     'stash@{2}:refs/heads/stash/myhost/local/repo/2']
+
+    """
+    prefix = getprefix('stash', info=info)
+    tmpl = r'stash@{{{0}}}:refs/heads/' + prefix + '/{0}'
+    return list(map(tmpl.format, range(num)))
+
+
 def cli_init(name, url, verbose, dry_run):
     """
     Add blackhole remote at `url` with `name`.
@@ -259,6 +277,7 @@ def cli_push(verify, remote, verbose, dry_run):
         cmd.append('--no-verify')
     cmd.append(remote)
     cmd.extend(branches)
+    cmd.extend(refspecs_for_stashes(len(git_stash_list())))
     # Explicitly specify destination (HEAD:HEAD didn't work):
     cmd.append('HEAD:refs/heads/{0}/HEAD'.format(prefix))
 
