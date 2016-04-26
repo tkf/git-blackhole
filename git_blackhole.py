@@ -62,6 +62,16 @@ def getbranches():
     return branches, checkout
 
 
+def getrefs():
+    out = check_output(['git', 'show-ref']).decode()
+    for line in out.splitlines():
+        yield line.rstrip().split(None, 1)
+
+
+def getrefnames():
+    return [ref for (_sha1, ref) in getrefs()]
+
+
 def getconfig(name, aslist=False):
     try:
         out = check_output(['git', 'config', '--null'] + (
@@ -227,6 +237,40 @@ def refspecs_for_stashes(num, info=None):
     return list(map(tmpl.format, range(num)))
 
 
+def refspecs_from_globs(globs, refs=None, info=None):
+    """
+    Compile refspecs for stashes and and return as a list strings.
+
+    >>> refspecs_from_globs(
+    ...     ['refs/wip/*'],
+    ...     refs=[
+    ...         'refs/heads/master',
+    ...         'refs/remotes/wip/master',
+    ...         'refs/wip/master',
+    ...     ],
+    ...     info=dict(
+    ...         host='myhost',
+    ...         repo=os.path.join(os.path.expanduser('~'), 'local/repo'),
+    ... ))                                 # doctest: +NORMALIZE_WHITESPACE
+    ['refs/wip/master:refs/wip/myhost/local/repo/master']
+
+    """
+    import fnmatch
+    info = info or getrecinfo()
+    allrefs = refs or getrefnames()
+    refs = []
+    for pattern in globs:
+        refs.extend(fnmatch.filter(allrefs, pattern))
+    refs = fnmatch.filter(refs, 'refs/*')
+    refs = [r for r in refs if not r.startswith('refs/remotes/')]
+    refspecs = []
+    for r in refs:
+        (_, type, rest) = r.split('/', 2)
+        prefix = getprefix(type, info=info)
+        refspecs.append('{0}:refs/{1}/{2}'.format(r, prefix, rest))
+    return refspecs
+
+
 def cli_init(name, url, verbose, dry_run):
     """
     Add blackhole remote at `url` with `name`.
@@ -251,7 +295,7 @@ def cli_init(name, url, verbose, dry_run):
         '+refs/heads/*:{0}/*'.format(prefix))
 
 
-def cli_push(verify, remote, verbose, dry_run):
+def cli_push(verify, remote, verbose, dry_run, ref_globs):
     """
     Push branches and HEAD forcefully to blackhole `remote`.
 
@@ -263,6 +307,11 @@ def cli_push(verify, remote, verbose, dry_run):
     It is useful to call this command from the ``post-commit`` hook::
 
       nohup git blackhole push --no-verify &> /dev/null &
+
+    To push revisions created by git-wip_ command, add option
+    ``--ref-glob='refs/wip/*'``.
+
+    .. _git-wip: https://github.com/bartman/git-wip
 
     """
     run = make_run(verbose, dry_run, check=False)
@@ -278,6 +327,7 @@ def cli_push(verify, remote, verbose, dry_run):
     cmd.append(remote)
     cmd.extend(branches)
     cmd.extend(refspecs_for_stashes(len(git_stash_list())))
+    cmd.extend(refspecs_from_globs(ref_globs))
     # Explicitly specify destination (HEAD:HEAD didn't work):
     cmd.append('HEAD:refs/heads/{0}/HEAD'.format(prefix))
 
@@ -416,6 +466,9 @@ def make_parser(doc=__doc__):
                    help='name of the remote blackhole repository')
     # FIXME: Stop hard-coding remote name.  Use git config system to
     # set default.
+    p.add_argument('--ref-glob', action='append', default=[],
+                   dest='ref_globs',
+                   help='add glob patterns to be pushed, e.g., wip/*')
 
     p = subp('trash-branch', cli_trash_branch)
     p.add_argument('branch',
