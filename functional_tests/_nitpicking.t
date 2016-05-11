@@ -103,6 +103,19 @@ Make sure that ``/sub/`` is not included in remote branch name::
   $ git ls-remote blackhole 'refs/heads/trash/*' | grep /local/sub/
   [1]
 
+``git blackhole trash-branch`` can take ``--no-verify``::
+
+  $ ln -s /bin/false .git/hooks/pre-push
+  $ mkbranch garbage another-file.txt
+  $ git blackhole trash-branch garbage
+  error: failed to push some refs to '../blackhole.git'
+  [123]
+  $ git blackhole trash-branch --no-verify garbage
+  To ../blackhole.git
+   * [new branch]      * -> trash/*/local/*/* (glob)
+  Deleted branch garbage (was *). (glob)
+  $ rm .git/hooks/pre-push
+
 
 ``git blackhole trash-stash``
 =============================
@@ -126,6 +139,7 @@ List remote branch names::
 
   $ git ls-remote blackhole 'refs/heads/trash/*' \
   >   | sed -r "s#.{40}\trefs/heads/trash/$(hostname)/##g"
+  local/../.{38} (re)
   local/../.{38} (re)
   local/../.{38} (re)
 
