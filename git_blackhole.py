@@ -481,6 +481,8 @@ def make_parser(doc=__doc__):
     p.add_argument('--ref-glob', action='append', default=[],
                    dest='ref_globs',
                    help='add glob patterns to be pushed, e.g., wip/*')
+    p.add_argument('--ignore-error', action='store_true',
+                   help='quick with code 0 on error')
 
     p = subp('trash-branch', cli_trash_branch)
     push_common(p)
@@ -509,13 +511,21 @@ def make_parser(doc=__doc__):
 def main(args=None):
     parser = make_parser()
     ns = parser.parse_args(args)
-    debug = ns.debug
-    del ns.debug
+    debug = ns.__dict__.pop('debug')
+    ignore_error = ns.__dict__.pop('ignore_error', False)
     try:
-        sys.exit((lambda func, **kwds: func(**kwds))(**vars(ns)))
+        # FIXME: stop returning error code from cli_* functions
+        code = (lambda func, **kwds: func(**kwds))(**vars(ns))
+        if ignore_error:
+            print("ignoring the error")
+            return
+        sys.exit(code)
     except CalledProcessError as err:
         if debug:
             raise
+        if ignore_error:
+            print("ignoring the error")
+            return
         sys.exit(err.returncode + 122)
 
 
