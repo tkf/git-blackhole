@@ -437,6 +437,7 @@ def make_parser(doc=__doc__):
     parser = argparse.ArgumentParser(
         formatter_class=FormatterClass,
         description=doc)
+    parser.add_argument('--debug', default=False, action='store_true')
     subparsers = parser.add_subparsers()
 
     def subp(command, func):
@@ -508,7 +509,14 @@ def make_parser(doc=__doc__):
 def main(args=None):
     parser = make_parser()
     ns = parser.parse_args(args)
-    sys.exit((lambda func, **kwds: func(**kwds))(**vars(ns)))
+    debug = ns.debug
+    del ns.debug
+    try:
+        sys.exit((lambda func, **kwds: func(**kwds))(**vars(ns)))
+    except CalledProcessError as err:
+        if debug:
+            raise
+        sys.exit(err.returncode + 122)
 
 
 if __name__ == '__main__':
