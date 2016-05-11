@@ -133,3 +133,19 @@ Make sure that ``/sub/`` is not included in remote branch name::
 
   $ git ls-remote blackhole 'refs/heads/trash/*' | grep /local/sub/
   [1]
+
+``git blackhole trash-stash`` can take ``--no-verify``::
+
+  $ ln -s /bin/false .git/hooks/pre-push
+  $ echo change >> README.txt
+  $ git stash
+  Saved working directory and index state WIP on master: * (glob)
+  HEAD is now at * (glob)
+  $ git blackhole trash-stash 0
+  error: failed to push some refs to '../blackhole.git'
+  [123]
+  $ git blackhole trash-stash --no-verify 0
+  To ../blackhole.git
+   * [new branch]      * -> trash/*/local/*/* (glob)
+  Dropped stash@{0} (*) (glob)
+  $ rm .git/hooks/pre-push
