@@ -137,8 +137,20 @@ def git_json_commit(heading, obj, parent):
         parent)
 
 
+def cmd_push(remote, force=False, verify=None):
+    cmd = ['git', 'push']
+    if force:
+        cmd.append('--force')
+    if verify is True:
+        cmd.append('--verify')
+    elif verify is False:
+        cmd.append('--no-verify')
+    cmd.append(remote)
+    return cmd
+
+
 def trash_commitish(commitish, remote, info, headingtemp,
-                    verbose, dry_run):
+                    verbose, dry_run, **kwds):
     """
     Push `commitish` to `remote` trash.
     """
@@ -151,7 +163,7 @@ def trash_commitish(commitish, remote, info, headingtemp,
     rev = git_json_commit(heading, info, commitish)
     refspec = '{0}:refs/heads/{1}/{2}/{3}'.format(rev, prefix,
                                                   rev[:2], rev[2:])
-    run('git', 'push', url, refspec)
+    run(*cmd_push(url, **kwds) + [refspec])
     return refspec
 
 
@@ -295,7 +307,7 @@ def cli_init(name, url, verbose, dry_run):
         '+refs/heads/*:{0}/*'.format(prefix))
 
 
-def cli_push(verify, remote, verbose, dry_run, ref_globs):
+def cli_push(verbose, dry_run, ref_globs, **kwds):
     """
     Push branches and HEAD forcefully to blackhole `remote`.
 
@@ -319,12 +331,7 @@ def cli_push(verify, remote, verbose, dry_run, ref_globs):
     branches, _checkout = getbranches()
 
     # Build "git push" command options:
-    cmd = ['git', 'push', '--force']
-    if verify is True:
-        cmd.append('--verify')
-    elif verify is False:
-        cmd.append('--no-verify')
-    cmd.append(remote)
+    cmd = cmd_push(force=True, **kwds)
     cmd.extend(branches)
     cmd.extend(refspecs_for_stashes(len(git_stash_list())))
     cmd.extend(refspecs_from_globs(ref_globs))
@@ -334,7 +341,8 @@ def cli_push(verify, remote, verbose, dry_run, ref_globs):
     return run(*cmd)
 
 
-def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
+def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run,
+                     **kwds):
     """
     [EXPERIMENTAL] Save `branch` in blackhole `remote` before deletion.
 
@@ -368,7 +376,7 @@ def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
     trash_commitish(
         branch, remote, dict(command='trash-branch', branch=branch),
         'Trash branch "{branch}" at {host}:{repo}',
-        verbose, dry_run)
+        verbose, dry_run, **kwds)
     run('git', 'branch', '--delete', '--force', branch)
 
     if remove_upstream:
@@ -380,7 +388,7 @@ def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run):
 
 
 def cli_trash_stash(remote, stash_range, keep_stashes,
-                    verbose, dry_run):
+                    verbose, dry_run, **kwds):
     """
     [EXPERIMENTAL] Save stashes in blackhole `remote` before deletion.
 
@@ -414,7 +422,7 @@ def cli_trash_stash(remote, stash_range, keep_stashes,
             trash_commitish(
                 sha1, remote, dict(command='trash-stash'),
                 'Trash a stash at {host}:{repo}',
-                verbose, dry_run)
+                verbose, dry_run, **kwds)
             if not keep_stashes:
                 run('git', 'stash', 'drop', stash)
 
@@ -451,6 +459,12 @@ def make_parser(doc=__doc__):
             'what is going to happen.')
         return p
 
+    def push_common(p):
+        p.add_argument('--verify', default=None, action='store_true',
+                       help='passed to git-push')
+        p.add_argument('--no-verify', dest='verify', action='store_false',
+                       help='passed to git-push')
+
     p = subp('init', cli_init)
     p.add_argument('--name', default='blackhole',
                    help='name of the remote blackhole repository')
@@ -458,10 +472,7 @@ def make_parser(doc=__doc__):
                    help='URL of the remote blackhole repository')
 
     p = subp('push', cli_push)
-    p.add_argument('--verify', default=None, action='store_true',
-                   help='passed to git-push')
-    p.add_argument('--no-verify', dest='verify', action='store_false',
-                   help='passed to git-push')
+    push_common(p)
     p.add_argument('--remote', default='blackhole',
                    help='name of the remote blackhole repository')
     # FIXME: Stop hard-coding remote name.  Use git config system to
@@ -471,6 +482,7 @@ def make_parser(doc=__doc__):
                    help='add glob patterns to be pushed, e.g., wip/*')
 
     p = subp('trash-branch', cli_trash_branch)
+    push_common(p)
     p.add_argument('branch',
                    help='branch to be removed')
     p.add_argument('--remote', default='blackhole',  # FIXME: see above
@@ -479,6 +491,7 @@ def make_parser(doc=__doc__):
                    help='remove branch in upstream repository.')
 
     p = subp('trash-stash', cli_trash_stash)
+    push_common(p)
     p.add_argument('--remote', default='blackhole',  # FIXME: see above
                    help='name of the remote blackhole repository')
     p.add_argument(
