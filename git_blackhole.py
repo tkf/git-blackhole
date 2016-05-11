@@ -307,7 +307,8 @@ def cli_init(name, url, verbose, dry_run):
         '+refs/heads/*:{0}/*'.format(prefix))
 
 
-def cli_push(verbose, dry_run, ref_globs, **kwds):
+def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
+             **kwds):
     """
     Push branches and HEAD forcefully to blackhole `remote`.
 
@@ -326,12 +327,19 @@ def cli_push(verbose, dry_run, ref_globs, **kwds):
     .. _git-wip: https://github.com/bartman/git-wip
 
     """
+    if getconfig('remote.{0}.url'.format(remote)) is None:
+        if skip_if_no_blackhole:
+            return
+        else:
+            print("git blackhole is not configured.")
+            print("Run: git blackhole init URL")
+            return 1
     run = make_run(verbose, dry_run, check=False)
     prefix = getprefix('host')
     branches, _checkout = getbranches()
 
     # Build "git push" command options:
-    cmd = cmd_push(force=True, **kwds)
+    cmd = cmd_push(remote=remote, force=True, **kwds)
     cmd.extend(branches)
     cmd.extend(refspecs_for_stashes(len(git_stash_list())))
     cmd.extend(refspecs_from_globs(ref_globs))
@@ -483,6 +491,8 @@ def make_parser(doc=__doc__):
                    help='add glob patterns to be pushed, e.g., wip/*')
     p.add_argument('--ignore-error', action='store_true',
                    help='quick with code 0 on error')
+    p.add_argument('--skip-if-no-blackhole', action='store_true',
+                   help='do nothing if git blackhole is not configured')
 
     p = subp('trash-branch', cli_trash_branch)
     push_common(p)
