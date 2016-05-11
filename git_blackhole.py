@@ -300,6 +300,10 @@ def cli_init(name, url, verbose, dry_run):
     """
     run = make_run(verbose, dry_run)
     prefix = getprefix('host')
+    if '/.' in prefix:
+        print('git blackhole cannot be configured for repositories',
+              'under a hidden directory (starting with ".")')
+        return 1
     run('git', 'remote', 'add', name, url)
     run('git', 'config', 'remote.{0}.fetch'.format(name),
         '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name))
