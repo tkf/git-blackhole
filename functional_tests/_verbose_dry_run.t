@@ -51,8 +51,8 @@ Add some changes in the local repository::
 
   $ git blackhole init -vn ../blackhole.git | sed s/$(hostname)/myhost/g
   git remote add blackhole ../blackhole.git
-  git config remote.blackhole.fetch +refs/heads/host/myhost/local/*:refs/remotes/blackhole/*
-  git config remote.blackhole.push +refs/heads/*:host/myhost/local/*
+  git config remote.blackhole.fetch +refs/heads/heads/myhost/local/*:refs/remotes/blackhole/*
+  git config remote.blackhole.push +refs/heads/*:heads/myhost/local/*
 
 
 Other commands require blackhole-initialized repository so let's run
@@ -66,7 +66,7 @@ it for real.::
 ::
 
   $ git blackhole push -vn | sed s/$(hostname)/myhost/g
-  git push --force blackhole master HEAD:refs/heads/host/myhost/local/HEAD
+  git push --force blackhole master HEAD:refs/heads/heads/myhost/local/HEAD
 
 
 ``git blackhole trash-branch --verbose --dry-run``

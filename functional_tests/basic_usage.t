@@ -51,7 +51,7 @@ Initialize blackhole::
   $ git blackhole init ../blackhole.git
 
 It just adds git remote named 'blackhole' (by default) and put prefix
-``host/$HOST/$RELPATH`` to ``fetch`` and ``push`` configuration, where
+``heads/$HOST/$RELPATH`` to ``fetch`` and ``push`` configuration, where
 ``$RELPATH`` is the relative path to the repository from ``$HOME``::
 
   $ git remote
@@ -60,8 +60,8 @@ It just adds git remote named 'blackhole' (by default) and put prefix
   $ tail -n4 .git/config | sed s/$(hostname)/myhost/g
   [remote "blackhole"]
   	url = ../blackhole.git
-  	fetch = +refs/heads/host/myhost/local/*:refs/remotes/blackhole/*
-  	push = +refs/heads/*:host/myhost/local/*
+  	fetch = +refs/heads/heads/myhost/local/*:refs/remotes/blackhole/*
+  	push = +refs/heads/*:heads/myhost/local/*
 
 
 Push to the remote blackhole
@@ -72,15 +72,15 @@ normally::
 
   $ git push blackhole master
   To ../blackhole.git
-   * [new branch]      master -> host/*/local/master (glob)
+   * [new branch]      master -> heads/*/local/master (glob)
 
 There is ``git blackhole push`` command to push all local branches
 *and* ``HEAD`` to the blackhole.  Note that local ``HEAD`` is pushed
-to remote branch named ``host/$HOST/$RELPATH/HEAD``.::
+to remote branch named ``heads/$HOST/$RELPATH/HEAD``.::
 
   $ git blackhole push
   To ../blackhole.git
-   * [new branch]      HEAD -> host/*/local/HEAD (glob)
+   * [new branch]      HEAD -> heads/*/local/HEAD (glob)
 
 Suppose you made a commit and pushed to the remote blackhole::
 
@@ -89,8 +89,8 @@ Suppose you made a commit and pushed to the remote blackhole::
   $ git commit --message 'Second commit' > /dev/null
   $ git blackhole push
   To ../blackhole.git
-     *  HEAD -> host/*/local/HEAD (glob)
-     *  master -> host/*/local/master (glob)
+     *  HEAD -> heads/*/local/HEAD (glob)
+     *  master -> heads/*/local/master (glob)
 
 but then decide to change the commit.::
 
@@ -103,8 +103,8 @@ uses ``git push --force``::
 
   $ git blackhole push
   To ../blackhole.git
-   + * HEAD -> host/*/local/HEAD (forced update) (glob)
-   + * master -> host/*/local/master (forced update) (glob)
+   + * HEAD -> heads/*/local/HEAD (forced update) (glob)
+   + * master -> heads/*/local/master (forced update) (glob)
 
 ``git blackhole push`` command pushes stashes as well::
 
@@ -118,8 +118,8 @@ uses ``git push --force``::
   $ git stash drop
   Dropped refs/stash@{0} (*) (glob)
   $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
-    host/myhost/local/HEAD
-    host/myhost/local/master
+    heads/myhost/local/HEAD
+    heads/myhost/local/master
     stash/myhost/local/0
 
 (BTW, let's not forget to push to the normal repository origin)::
@@ -157,8 +157,8 @@ Trashed branch is pushed to remote branch named
 ``trash/$HOST/$RELPATH/$REV[:2]/$REV[2:]``::
 
   $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
-    host/myhost/local/HEAD
-    host/myhost/local/master
+    heads/myhost/local/HEAD
+    heads/myhost/local/master
     stash/myhost/local/0
     trash/myhost/local/*/* (glob)
   $ b=$(git --git-dir=../blackhole.git branch --list | grep trash/)

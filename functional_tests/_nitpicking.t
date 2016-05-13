@@ -57,8 +57,8 @@ Running ``git blackhole init`` at non-root should work.::
   $ tail -n4 .git/config | sed s/$(hostname)/myhost/g
   [remote "blackhole"]
   	url = ../blackhole.git
-  	fetch = +refs/heads/host/myhost/local/*:refs/remotes/blackhole/*
-  	push = +refs/heads/*:host/myhost/local/*
+  	fetch = +refs/heads/heads/myhost/local/*:refs/remotes/blackhole/*
+  	push = +refs/heads/*:heads/myhost/local/*
 
 ``git blackhole push``
 ======================
@@ -74,8 +74,8 @@ Running ``git blackhole init`` at non-root should work.::
   [1]
   $ git blackhole push --no-verify
   To ../blackhole.git
-   * [new branch]      master -> host/*/local/master (glob)
-   * [new branch]      HEAD -> host/*/local/HEAD (glob)
+   * [new branch]      master -> heads/*/local/master (glob)
+   * [new branch]      HEAD -> heads/*/local/HEAD (glob)
   $ rm .git/hooks/pre-push
 
 

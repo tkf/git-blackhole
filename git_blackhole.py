@@ -293,13 +293,13 @@ def cli_init(name, url, verbose, dry_run):
     as if it is a yet another remote repository.
 
     To be more precise, each local branch is related to the branch at
-    the blackhole remote with the prefix ``host/$HOST/$RELPATH/``
+    the blackhole remote with the prefix ``heads/$HOST/$RELPATH/``
     where ``$HOST`` is the name of local machine and ``$RELPATH`` is
     the path of the repository relative to ``$HOME``.
 
     """
     run = make_run(verbose, dry_run)
-    prefix = getprefix('host')
+    prefix = getprefix('heads')
     if '/.' in prefix:
         print('git blackhole cannot be configured for repositories',
               'under a hidden directory (starting with ".")')
@@ -317,7 +317,7 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
     Push branches and HEAD forcefully to blackhole `remote`.
 
     Note that local HEAD is pushed to the remote branch named
-    ``host/$HOST/$RELPATH/HEAD`` (see help of ``git blackhole init``)
+    ``heads/$HOST/$RELPATH/HEAD`` (see help of ``git blackhole init``)
     instead of real remote HEAD.  This way, if the blackhole remote is
     shared with other machine, you can recover the HEAD at ``$HOST``.
 
@@ -339,7 +339,7 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
             print("Run: git blackhole init URL")
             return 1
     run = make_run(verbose, dry_run, check=False)
-    prefix = getprefix('host')
+    prefix = getprefix('heads')
     branches, _checkout = getbranches()
 
     # Build "git push" command options:
