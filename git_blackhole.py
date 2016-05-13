@@ -36,7 +36,6 @@ def make_run(verbose, dry_run, check=True):
 def getprefix(type, info=None):
     info = info or getrecinfo()
     return '{type}/{host}/{relpath}'.format(
-        relpath=os.path.relpath(info['repo'], os.path.expanduser('~')),
         type=type,
         **info)
 
@@ -44,9 +43,11 @@ def getprefix(type, info=None):
 def getrecinfo():
     from socket import gethostname
     repo = check_output(['git', 'rev-parse', '--show-toplevel'])
+    repo = repo.decode().rstrip()
     return dict(
         host=gethostname(),
-        repo=repo.decode().rstrip(),
+        repo=repo,
+        relpath=os.path.relpath(repo, os.path.expanduser('~')),
         git_blackhole=__version__)
 
 
@@ -237,7 +238,7 @@ def refspecs_for_stashes(num, info=None):
 
     >>> refspecs_for_stashes(3, info=dict(
     ...     host='myhost',
-    ...     repo=os.path.join(os.path.expanduser('~'), 'local/repo'),
+    ...     relpath='local/repo',
     ... ))                                 # doctest: +NORMALIZE_WHITESPACE
     ['stash@{0}:refs/heads/stash/myhost/local/repo/0',
      'stash@{1}:refs/heads/stash/myhost/local/repo/1',
@@ -262,7 +263,7 @@ def refspecs_from_globs(globs, refs=None, info=None):
     ...     ],
     ...     info=dict(
     ...         host='myhost',
-    ...         repo=os.path.join(os.path.expanduser('~'), 'local/repo'),
+    ...         relpath='local/repo',
     ... ))                                 # doctest: +NORMALIZE_WHITESPACE
     ['refs/wip/master:refs/wip/myhost/local/repo/master']
 
@@ -283,7 +284,7 @@ def refspecs_from_globs(globs, refs=None, info=None):
     return refspecs
 
 
-def cli_init(name, url, verbose, dry_run):
+def cli_init(name, url, verbose, dry_run, _prefix=None):
     """
     Add blackhole remote at `url` with `name`.
 
@@ -299,7 +300,7 @@ def cli_init(name, url, verbose, dry_run):
 
     """
     run = make_run(verbose, dry_run)
-    prefix = getprefix('heads')
+    prefix = _prefix or getprefix('heads')
     if '/.' in prefix:
         print('git blackhole cannot be configured for repositories',
               'under a hidden directory (starting with ".")')
@@ -309,6 +310,30 @@ def cli_init(name, url, verbose, dry_run):
         '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name))
     run('git', 'config', 'remote.{0}.push'.format(name),
         '+refs/heads/*:{0}/*'.format(prefix))
+
+
+def cli_warp(host, relpath, name, remote, url, **kwds):
+    """
+    Peak into other repositories through the blackhole.
+    """
+    if not (host or relpath):
+        print('need HOST or --relpath=RELPATH')
+        return 2
+    if not url:
+        url = getconfig('remote.{0}.url'.format(remote))
+        if url is None:
+            print('need --url in an uninitialized repository')
+            return 1
+
+    info = getrecinfo()
+    info.update(
+        host=host or info['host'],
+        relpath=relpath or info['relpath'],
+    )
+    prefix = getprefix('heads', info)
+    if not name:
+        name = 'bh_' + host
+    return cli_init(_prefix=prefix, name=name, url=url, **kwds)
 
 
 def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
@@ -483,6 +508,23 @@ def make_parser(doc=__doc__):
                    help='name of the remote blackhole repository')
     p.add_argument('url',
                    help='URL of the remote blackhole repository')
+
+    p = subp('warp', cli_warp)
+    p.add_argument('--name', default='',
+                   help='Name of the repository at <HOST>:<RELPATH>, '
+                   ' accessed through the blackhole.'
+                   ' Set to "bh_<HOST>" if empty.')
+    p.add_argument('--url',
+                   help='URL of the remote blackhole repository'
+                   ' Use remote.<REMOTE>.url if not given.')
+    p.add_argument('--remote', default='blackhole',
+                   help='name of the remote blackhole repository')
+    p.add_argument('--relpath',
+                   help='The repository relative to the $HOME at <HOST>.'
+                   ' Use current repository root if empty.')
+    p.add_argument('host', default='', metavar='HOST', nargs='?',
+                   help='The host name of the repository.'
+                   ' Use current host name if empty.')
 
     p = subp('push', cli_push)
     push_common(p)
