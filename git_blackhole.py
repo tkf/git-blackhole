@@ -527,6 +527,16 @@ def cli_show_trash(verbose, dry_run):
     run('git', 'show', *revs)
 
 
+def cli_rm_local_trash(verbose, dry_run, refs, all):
+    run = make_run(verbose, dry_run)
+    if all:
+        out = check_output(['git', 'rev-parse', '--symbolic',
+                            '--glob=refs/bh/trash/*'])
+        refs = out.decode().splitlines()
+    for r in refs:
+        run('git', 'update-ref', '-d', r)
+
+
 def make_parser(doc=__doc__):
     import argparse
 
@@ -630,6 +640,10 @@ def make_parser(doc=__doc__):
 
     p = subp('ls-trash', cli_ls_trash)
     p = subp('show-trash', cli_show_trash)
+
+    p = subp('rm-local-trash', cli_rm_local_trash)
+    p.add_argument('--all', '-a', action='store_true')
+    p.add_argument('refs', metavar='ref', nargs='*')
 
     return parser
 

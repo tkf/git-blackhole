@@ -342,3 +342,20 @@ Trashes are now available in ``refs/bh/trash/XX/XXXX...``::
       
       GIT-BLACKHOLE-JSON:
       {*"command": "trash-stash"*} (glob)
+
+``ls-trash`` prints sha1 of trash commits::
+
+  $ git blackhole ls-trash | wc -l
+  11
+
+Use ``show-trash`` to see trashed commits::
+
+  $ git blackhole show-trash | grep -v Merge: | head -n3
+  commit * (glob)
+  Author: Test Black-Hole <test@blackhole>
+  Date:   * (glob)
+
+Use ``rm-local-trash`` to remove local trashes::
+
+  $ git blackhole rm-local-trash --all
+  $ git blackhole ls-trash
