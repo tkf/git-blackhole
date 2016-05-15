@@ -141,6 +141,15 @@ def git_json_commit(heading, obj, parent):
         parent)
 
 
+def parse_json_message(message):
+    import json
+    heading, _, cookie, rest = message.split('\n', 3)
+    preh = 'GIT-BLACKHOLE: '
+    assert heading.startswith(preh)
+    assert cookie == 'GIT-BLACKHOLE-JSON:'
+    return (heading[len(preh):], json.loads(rest))
+
+
 def cmd_push(remote, force=False, verify=None):
     cmd = ['git', 'push']
     if force:
@@ -169,6 +178,28 @@ def trash_commitish(commitish, remote, info, headingtemp,
                                                   rev[:2], rev[2:])
     run(*cmd_push(url, **kwds) + [refspec])
     return refspec
+
+
+def trashinfo(rev):
+    out = check_output(['git', 'show', '--format=format:%B', rev])
+    heading, obj = parse_json_message(out.decode())
+    rev0 = check_output(['git', 'rev-parse', rev + '^'])
+    return dict(obj, heading=heading, rev_info=rev, rev=rev0.decode().strip())
+
+
+def gettrashes():
+    out = check_output(['git', 'rev-parse', '--glob=refs/bh/trash/*'])
+    revs = out.decode().splitlines()
+    return list(map(trashinfo, revs))
+
+
+def show_trashes(trashes, verbose):
+    for trash in trashes:
+        print(trash['rev'])
+        if verbose:
+            keys = set(trash) - {'heading', 'rev', 'git_blackhole'}
+            for k in keys:
+                print('  ', k, ': ', trash[k], sep='')
 
 
 def git_stash_list():
@@ -486,6 +517,16 @@ def cli_fetch_trash(remote, verbose, dry_run):
     run(*cmd)
 
 
+def cli_ls_trash(verbose, dry_run):
+    show_trashes(gettrashes(), verbose)
+
+
+def cli_show_trash(verbose, dry_run):
+    revs = [t['rev'] for t in gettrashes()]
+    run = make_run(verbose, dry_run)
+    run('git', 'show', *revs)
+
+
 def make_parser(doc=__doc__):
     import argparse
 
@@ -586,6 +627,9 @@ def make_parser(doc=__doc__):
     p = subp('fetch-trash', cli_fetch_trash)
     p.add_argument('--remote', default='blackhole',  # FIXME: see above
                    help='name of the remote blackhole repository')
+
+    p = subp('ls-trash', cli_ls_trash)
+    p = subp('show-trash', cli_show_trash)
 
     return parser
 
