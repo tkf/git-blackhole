@@ -256,7 +256,7 @@ Stash some commits::
 
 Trash ``stash@{0}``::
 
-  $ git blackhole trash-stash 0 2>&1 | tee ../stdout
+  $ git blackhole trash-stash 0 2>&1 | tee ../stdout-stash0
   To ../blackhole.git
    * [new branch]      * -> trash/*/local/*/* (glob)
   Dropped stash@{0} (*) (glob)
@@ -266,7 +266,7 @@ Trash ``stash@{0}``::
 Trashed branch is pushed to remote branch as in the case of trashing
 branch::
 
-  $ b=$(sed -rn 's#.*(trash/[^ ]*).*#\1#p' ../stdout)
+  $ b=$(sed -rn 's#.*(trash/[^ ]*).*#\1#p' ../stdout-stash0)
   $ git --git-dir=../blackhole.git show $b
   commit * (glob)
   Author: Test Black-Hole <test@blackhole>
@@ -303,9 +303,42 @@ Suppose there are many stashes::
 
 Then passing range of stash comes in handy::
 
-  $ git blackhole trash-stash 0,3-5,8- >../stdout 2>&1
+  $ git blackhole trash-stash 0,3-5,8- > /dev/null 2>&1
   $ git stash list
   stash@{0}: On master: Stash No.9
   stash@{1}: On master: Stash No.8
   stash@{2}: On master: Stash No.4
   stash@{3}: On master: Stash No.3
+
+
+Fetching trashes
+================
+
+::
+
+  $ git blackhole fetch-trash
+  From ../blackhole
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+   * [new branch]      trash/*/local/*/* -> refs/bh/trash/*/* (glob)
+
+Trashes are now available in ``refs/bh/trash/XX/XXXX...``::
+
+  $ sha1=$(sed -rn 's#.*trash/[^/]+/[^/]+/([^ ]*).*#\1#p' ../stdout-stash0)
+  $ git show "refs/bh/trash/$sha1"
+  commit * (glob)
+  Author: Test Black-Hole <test@blackhole>
+  Date:   * (glob)
+  
+      GIT-BLACKHOLE: Trash a stash at * (glob)
+      
+      GIT-BLACKHOLE-JSON:
+      {*"command": "trash-stash"*} (glob)

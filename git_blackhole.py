@@ -22,13 +22,16 @@ def make_run(verbose, dry_run, check=True):
     from subprocess import check_call, call
 
     def run(*command, **kwds):
+        out = kwds.pop('out', False)
         if verbose:
             redirects = ()
             if 'stdout' in kwds:
                 redirects = ('>', kwds['stdout'].name)
             print(' '.join(command + redirects))
             sys.stdout.flush()
-        if not dry_run:
+        if out:
+            return check_output(command, **kwds)
+        elif not dry_run:
             return (check_call if check else call)(command, **kwds)
     return run
 
@@ -464,6 +467,25 @@ def cli_trash_stash(remote, stash_range, keep_stashes,
                 run('git', 'stash', 'drop', stash)
 
 
+def cli_fetch_trash(remote, verbose, dry_run):
+    run = make_run(verbose, dry_run)
+    info = dict(getrecinfo(), host='*')
+    prefix = getprefix('trash', info)
+    out = run('git', 'ls-remote', 'blackhole',
+              'refs/heads/' + prefix + '/*', out=True)
+    refs = [l.split(None, 1)[1] for l in out.decode().splitlines()]
+    cmd = ['git', 'fetch']
+    if verbose:
+        cmd.append('--verbose')
+    cmd.append(remote)
+    cmd.append('--')
+    cmd.extend(
+        '{0}:refs/bh/trash/{1[0]}/{1[1]}'.format(r, r.rsplit('/', 2)[-2:])
+        for r in refs
+    )
+    run(*cmd)
+
+
 def make_parser(doc=__doc__):
     import argparse
 
@@ -560,6 +582,10 @@ def make_parser(doc=__doc__):
     p.add_argument(
         '--keep-stashes', '-k', default=False, action='store_true',
         help='when this option is given, do not remove local stashes.')
+
+    p = subp('fetch-trash', cli_fetch_trash)
+    p.add_argument('--remote', default='blackhole',  # FIXME: see above
+                   help='name of the remote blackhole repository')
 
     return parser
 
