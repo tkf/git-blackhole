@@ -499,6 +499,9 @@ def cli_trash_stash(remote, stash_range, keep_stashes,
 
 
 def cli_fetch_trash(remote, verbose, dry_run):
+    """
+    Fetch trashes from remote to ``refs/bh/trash/``.
+    """
     run = make_run(verbose, dry_run)
     info = dict(getrecinfo(), host='*')
     prefix = getprefix('trash', info)
@@ -518,16 +521,25 @@ def cli_fetch_trash(remote, verbose, dry_run):
 
 
 def cli_ls_trash(verbose, dry_run):
+    """
+    List locally fetched trashes.
+    """
     show_trashes(gettrashes(), verbose)
 
 
 def cli_show_trash(verbose, dry_run):
+    """
+    Run ``git show`` on locally fetched trashes.
+    """
     revs = [t['rev'] for t in gettrashes()]
     run = make_run(verbose, dry_run)
     run('git', 'show', *revs)
 
 
 def cli_rm_local_trash(verbose, dry_run, refs, all):
+    """
+    Remove locally fetched trashes.
+    """
     run = make_run(verbose, dry_run)
     if all:
         out = check_output(['git', 'rev-parse', '--symbolic',
@@ -642,8 +654,10 @@ def make_parser(doc=__doc__):
     p = subp('show-trash', cli_show_trash)
 
     p = subp('rm-local-trash', cli_rm_local_trash)
-    p.add_argument('--all', '-a', action='store_true')
-    p.add_argument('refs', metavar='ref', nargs='*')
+    p.add_argument('--all', '-a', action='store_true',
+                   help='remove all local copy of trashes')
+    p.add_argument('refs', metavar='ref', nargs='*',
+                   help='trash refs to be removed.')
 
     return parser
 
