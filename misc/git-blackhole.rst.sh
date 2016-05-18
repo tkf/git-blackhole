@@ -47,7 +47,7 @@ echo
 for cmd in $commands
 do
     echo '``'git blackhole $cmd'``'
-    echo ------------------------------
+    echo ------------------------------------------------------------------
     ./git-blackhole $cmd --help | extract-options
     echo
     echo
