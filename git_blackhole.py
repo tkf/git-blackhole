@@ -632,7 +632,10 @@ def make_parser(doc=__doc__):
     p.add_argument('--remote', default='blackhole',  # FIXME: see above
                    help='name of the remote blackhole repository')
     p.add_argument('--remove-upstream', '-u', action='store_true',
-                   help='remove branch in upstream repository.')
+                   help='remove branch in upstream repository.'
+                   ' i.e., remove branch.<branch>.merge'
+                   ' at branch.<branch>.remote. ignored if no remote'
+                   ' is set.')
 
     p = subp('trash-stash', cli_trash_stash)
     push_common(p)
