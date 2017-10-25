@@ -111,7 +111,6 @@ uses ``git push --force``::
   $ echo change >> README.txt
   $ git stash
   Saved working directory and index state WIP on master: * (glob)
-  HEAD is now at * (glob)
   $ git blackhole push
   To ../blackhole.git
    * [new branch]      stash@{0} -> stash/*/local/0 (glob)
@@ -244,11 +243,9 @@ Stash some commits::
   $ echo change 0 >> README.txt
   $ git stash
   Saved working directory and index state WIP on master: * (glob)
-  HEAD is now at * Changed second commit (glob)
   $ echo change 1 >> README.txt
   $ git stash
   Saved working directory and index state WIP on master: * (glob)
-  HEAD is now at * Changed second commit (glob)
   $ git stash list
   stash@{0}: WIP on master: * Changed second commit (glob)
   stash@{1}: WIP on master: * Changed second commit (glob)

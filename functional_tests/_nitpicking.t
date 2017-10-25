@@ -125,7 +125,6 @@ Running ``git blackhole trash-stash`` at non-root should work.::
   $ echo change 0 >> README.txt
   $ git stash
   Saved working directory and index state WIP on master: * (glob)
-  HEAD is now at * (glob)
   $ git stash list
   stash@{0}: WIP on master: * (glob)
   $ cd sub
@@ -154,7 +153,6 @@ Make sure that ``/sub/`` is not included in remote branch name::
   $ echo change >> README.txt
   $ git stash
   Saved working directory and index state WIP on master: * (glob)
-  HEAD is now at * (glob)
   $ git blackhole trash-stash 0
   error: failed to push some refs to '../blackhole.git'
   [123]
