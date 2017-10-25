@@ -412,8 +412,7 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
     return run(*cmd)
 
 
-def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run,
-                     **kwds):
+def cli_trash_branch(branches, verbose, dry_run, **kwds):
     """
     [EXPERIMENTAL] Save `branch` in blackhole `remote` before deletion.
 
@@ -436,7 +435,20 @@ def cli_trash_branch(branch, remote, remove_upstream, verbose, dry_run,
       the info I need.
     """
     run = make_run(verbose, dry_run)
-    branches, checkout = getbranches()
+    _branches, checkout = getbranches()
+    final_code = None
+    for branch in branches:
+        code = trash_branch(run, checkout, branch,
+                            verbose=verbose, dry_run=dry_run,
+                            **kwds)
+        if code:
+            final_code = code
+    return final_code
+
+
+def trash_branch(run, checkout, branch, verbose, dry_run,
+                 remote, remove_upstream,
+                 **kwds):
     if branch == checkout:
         print("Cannot trash the branch '{0}' which you are currently on."
               .format(branch))
@@ -627,7 +639,7 @@ def make_parser(doc=__doc__):
 
     p = subp('trash-branch', cli_trash_branch)
     push_common(p)
-    p.add_argument('branch',
+    p.add_argument('branches', metavar='branch', nargs='+',
                    help='branch to be removed')
     p.add_argument('--remote', default='blackhole',  # FIXME: see above
                    help='name of the remote blackhole repository')

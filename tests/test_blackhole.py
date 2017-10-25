@@ -58,7 +58,7 @@ class TestTrash(MixInGitReposPerMethod, unittest.TestCase):
     def test_trash_branch(self, branch='garbage'):
         run('git', 'branch', branch)
         cli_trash_branch(
-            branch=branch, remove_upstream=False,
+            branches=[branch], remove_upstream=False,
             remote='blackhole', verbose=True, dry_run=False)
         assert call(['git', 'show-ref', '--verify', '--quiet', branch]) != 0
 
