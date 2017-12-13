@@ -20,13 +20,17 @@ setup(
     ],
     author=git_blackhole.__author__,
     author_email='aka.tkf@gmail.com',
-    # url='https://github.com/tkf/git_blackhole',
+    url='https://github.com/tkf/git-blackhole',
     license=git_blackhole.__license__,
-    # description='git_blackhole - THIS DOES WHAT',
+    description='Continuous backup and recoverable trash can for Git',
     long_description=git_blackhole.__doc__,
-    # keywords='KEYWORD, KEYWORD, KEYWORD',
+    keywords='Git, Backup, CLI',
     classifiers=[
         "Development Status :: 3 - Alpha",
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Version Control :: Git",
         # see: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     ],
     # Having `entry_points` only yields warning for `distutils.core`
