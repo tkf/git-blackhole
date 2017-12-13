@@ -9,5 +9,6 @@ env:
 before_install:
   - pip install --quiet tox
 script:
-  - export TOX_ENV="${TESTPREFIX}$(echo $TRAVIS_PYTHON_VERSION | sed 's/\.//')"
+  - export TOXENV="${TESTPREFIX}$(echo $TRAVIS_PYTHON_VERSION | sed 's/\.//')"
+  - echo "$TOXENV"
   - tox
