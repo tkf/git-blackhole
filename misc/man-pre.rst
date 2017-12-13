@@ -3,7 +3,7 @@
 =================
 
 :title: git-blackhole
-:subtitle: where you can throw everything to
+:subtitle: it can suck any commits
 :manual_group: Git blackhole manual
 
 Synopsis

@@ -2,8 +2,37 @@
 Connecting your repository to the blackhole which can swallow everything.
 
 The aim of ``git-blackhole`` is to connect any of your repositories to
-a single repository to which you can throw everything --- WIP commits,
-branches no longer needed, and useless stashes.
+a single repository ("blackhole" repository) to which you can push any
+commits --- WIP commits, branches no longer needed, and useless
+stashes.
+
+There are three main features of ``git-blackhole``:
+
+1. **Continuous backup**.  You can use ``git-blackhole`` to
+   continuously backup commits in background to a remote repository
+   (or actually any repository) called blackhole repository.
+
+   Run ``git blackhole init`` and then setup ``post-commit`` hook to
+   run ``git blackhole push``.  See the help of ``git blackhole push``
+   for the details.
+
+   By combining with git-wip_ command, you can backup/share
+   uncommitted changes as well.
+
+2. **Sharing local repository state**.  Since ``git-blackhole`` can
+   push commits and the location of HEAD to the blackhole repository,
+   the state of a repository in one machine is accessible from other
+   machines.
+
+   For example, if you forget to push a commit from your desktop (to
+   the usual remote) but want to resume the work from your laptop,
+   ``git blackhole warp`` would be helpful.
+
+3. **Recoverable trash can**.  Use ``git blackhole trash-branch`` and
+   ``git blackhole trash-stashes`` to remove branches and stashes from
+   the local repository after sending them to the remote blackhole
+   repository.  They are stored remotely as ordinary branches so that
+   you can recover them easily.
 
 """
 
@@ -348,7 +377,7 @@ def cli_init(name, url, verbose, dry_run, _prefix=None):
 
 def cli_warp(host, relpath, name, remote, url, **kwds):
     """
-    Peak into other repositories through the blackhole.
+    Peek into other repositories through the blackhole.
     """
     if not (host or relpath):
         print('need HOST or --relpath=RELPATH')
@@ -383,6 +412,8 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
     It is useful to call this command from the ``post-commit`` hook::
 
       nohup git blackhole push --no-verify &> /dev/null &
+
+    See also `githooks(5)`.
 
     To push revisions created by git-wip_ command, add option
     ``--ref-glob='refs/wip/*'``.
@@ -424,9 +455,16 @@ def cli_trash_branch(branches, verbose, dry_run, **kwds):
     commit recording the revision of `branch` and some meta
     information).
 
-    .. WARNING:: Currently, there is no commands to help retrieving
-       trashed branches.  You have to do it manually using standard
-       git commands.
+    Use ``git blackhole fetch-trash`` to retrieve all trashes from
+    remote and store them locally.  Commands ``git blackhole
+    ls-branch`` and ``git blackhole show-branch`` can be used to list
+    and show trash commits.
+
+    .. WARNING:: Commands to navigate through trashes (e.g., ``git
+       blackhole show-branch``) are still preliminary.  Furthermore,
+       how trash metadata is stored may change in the future.
+       However, since trashes are ordinary git branches in remote,
+       they can be dealt with standard git commands.
 
     """
     """
@@ -534,14 +572,14 @@ def cli_fetch_trash(remote, verbose, dry_run):
 
 def cli_ls_trash(verbose, dry_run):
     """
-    List locally fetched trashes.
+    List trashes fetched by ``git blackhole fetch-trash``.
     """
     show_trashes(gettrashes(), verbose)
 
 
 def cli_show_trash(verbose, dry_run):
     """
-    Run ``git show`` on locally fetched trashes.
+    Run ``git show`` on trashes fetched by ``git blackhole fetch-trash``.
     """
     revs = [t['rev'] for t in gettrashes()]
     run = make_run(verbose, dry_run)
@@ -550,7 +588,7 @@ def cli_show_trash(verbose, dry_run):
 
 def cli_rm_local_trash(verbose, dry_run, refs, all):
     """
-    Remove locally fetched trashes.
+    Remove trashes fetched by ``git blackhole fetch-trash``.
     """
     run = make_run(verbose, dry_run)
     if all:
