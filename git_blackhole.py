@@ -12,11 +12,15 @@ There are three main features of ``git-blackhole``:
 
 1. **Continuous backup**.  You can use ``git-blackhole`` to
    continuously backup commits in background to a remote repository
-   (or actually any repository) called blackhole repository.
+   (or actually any repository) called *blackhole repository*.
 
-   Run ``git blackhole init`` and then setup ``post-commit`` hook to
-   run ``git blackhole push``.  See the help of ``git blackhole push``
-   for the details.
+   Run ``git blackhole init <url>`` and then setup ``post-commit``
+   hook to run ``git blackhole push``.  See the help of ``git
+   blackhole init`` and ``git blackhole push`` for the details.
+
+   Note that blackhole repository at ``<url>`` can be used for
+   arbitrary number of local repositories.  You just need to setup a
+   single repository once.
 
    By combining with git-wip_ command, you can backup/share
    uncommitted changes as well.
