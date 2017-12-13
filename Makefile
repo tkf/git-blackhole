@@ -33,7 +33,8 @@ preview-git-blackhole.1 preview-git-blackhole-basic-usage.5: preview-%:
 preview-git-blackhole.rst preview-git-blackhole-basic-usage.rst: preview-%:
 	misc/$*.sh - | pygmentize -l rst | less -R
 
-README.rst: misc/README.rst.sh misc/git-blackhole.rst.sh git_blackhole.py
+README.rst: misc/README.rst.sh misc/git-blackhole.rst.sh \
+misc/readme-pre.rst misc/readme-post.rst git_blackhole.py
 	$< > $@
 
 ## Upload to PyPI
