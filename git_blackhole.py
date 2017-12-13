@@ -44,7 +44,7 @@ from subprocess import check_output, CalledProcessError
 
 __version__ = '0.0.0'
 __author__ = 'Takafumi Arakaki'
-__license__ = None
+__license__ = 'BSD-2-Clause'  # SPDX short identifier
 
 
 def make_run(verbose, dry_run, check=True):
