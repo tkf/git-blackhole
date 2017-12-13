@@ -4,6 +4,19 @@
 
 |build-status| |coveralls|
 
+Installation
+============
+
+Use pip::
+
+  pip install git-blackhole
+
+Directly download from GitHub::
+
+  curl https://raw.githubusercontent.com/tkf/git-blackhole/master/git_blackhole.py --output git-blackhole
+  chmod u+x git-blackhole
+
+
 Synopsis
 ========
 
