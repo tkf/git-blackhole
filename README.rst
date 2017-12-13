@@ -4,11 +4,6 @@
 
 |build-status|
 
-.. |build-status|
-   image:: https://travis-ci.org/tkf/git-blackhole.svg?branch=master
-   :target: https://travis-ci.org/tkf/git-blackhole
-   :alt: Build Status
-
 Synopsis
 ========
 
@@ -299,7 +294,7 @@ Options
 --all, -a      remove all local copy of trashes (default: False)
 
 
-See also
-========
-
-git-blackhole-basic-usage(5)
+.. |build-status|
+   image:: https://travis-ci.org/tkf/git-blackhole.svg?branch=master
+   :target: https://travis-ci.org/tkf/git-blackhole
+   :alt: Build Status
