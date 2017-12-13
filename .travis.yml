@@ -6,6 +6,12 @@ python:
 env:
   - TESTPREFIX=py
   - TESTPREFIX=cram
+matrix:
+  allow_failures:
+    - env: TESTPREFIX=cram
+      # cram test depends on git version so it may fail with some
+      # version of git.
+      # TODO: fix git version in CI
 before_install:
   - pip install --quiet tox docutils coveralls
   # docutils (rst2man.py) is required during sdist.  That's why it is
