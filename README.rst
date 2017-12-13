@@ -62,6 +62,8 @@ There are three main features of ``git-blackhole``:
    repository.  They are stored remotely as ordinary branches so that
    you can recover them easily.
 
+.. _git-wip: https://github.com/bartman/git-wip
+
 ``git blackhole init``
     Add blackhole remote at `url` with `name`.
 
@@ -99,8 +101,6 @@ There are three main features of ``git-blackhole``:
 
     To push revisions created by git-wip_ command, add option
     ``--ref-glob='refs/wip/*'``.
-
-    .. _git-wip: https://github.com/bartman/git-wip
 
 
 

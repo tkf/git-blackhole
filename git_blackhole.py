@@ -36,6 +36,8 @@ There are three main features of ``git-blackhole``:
    repository.  They are stored remotely as ordinary branches so that
    you can recover them easily.
 
+.. _git-wip: https://github.com/bartman/git-wip
+
 """
 
 from __future__ import print_function
@@ -419,8 +421,6 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
 
     To push revisions created by git-wip_ command, add option
     ``--ref-glob='refs/wip/*'``.
-
-    .. _git-wip: https://github.com/bartman/git-wip
 
     """
     if getconfig('remote.{0}.url'.format(remote)) is None:
