@@ -46,7 +46,7 @@ import os
 import sys
 from subprocess import check_output, CalledProcessError
 
-__version__ = '0.1.0.post1'
+__version__ = '0.1.1.dev1'
 __author__ = 'Takafumi Arakaki'
 __license__ = 'BSD-2-Clause'  # SPDX short identifier
 
