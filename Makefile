@@ -37,5 +37,6 @@ README.rst: misc/README.rst.sh misc/git-blackhole.rst.sh git_blackhole.py
 	$< > $@
 
 ## Upload to PyPI
-upload:
-	python setup.py register sdist upload
+upload: clean-man clean-notox
+	python setup.py sdist
+	twine upload dist/*
