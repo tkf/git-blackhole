@@ -5,3 +5,5 @@ include git-blackhole
 # It seems that setuptools does not include data_files automatically.
 # So let's include man files manually.
 include git-blackhole*.[0-9]
+
+include LICENSE
