@@ -35,7 +35,8 @@ preview-git-blackhole.rst preview-git-blackhole-basic-usage.rst: preview-%:
 
 README.rst: misc/README.rst.sh misc/git-blackhole.rst.sh \
 misc/readme-pre.rst misc/readme-post.rst git_blackhole.py
-	$< > $@
+	$< > $@.tmp
+	mv $@.tmp $@
 
 ## Upload to PyPI
 upload: clean-man clean-notox
