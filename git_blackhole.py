@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Connecting your repository to the blackhole which can swallow everything.
 
