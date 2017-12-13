@@ -1,0 +1,13 @@
+sudo: false
+language: python
+python:
+  - "2.7"
+  - "3.6"
+env:
+  - TESTPREFIX=py
+  - TESTPREFIX=cram
+before_install:
+  - pip install --quiet tox
+script:
+  - export TOX_ENV="${TESTPREFIX}$(echo $TRAVIS_PYTHON_VERSION | sed 's/\.//')"
+  - tox
