@@ -7,7 +7,9 @@ env:
   - TESTPREFIX=py
   - TESTPREFIX=cram
 before_install:
-  - pip install --quiet tox
+  - pip install --quiet tox docutils
+  # docutils (rst2man.py) is required during sdist.  That's why it is
+  # installed outside tox.
 script:
   - export TOXENV="${TESTPREFIX}$(echo $TRAVIS_PYTHON_VERSION | sed 's/\.//')"
   - echo "$TOXENV"
