@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Connecting your repository to the blackhole which can swallow everything.
+Continuous backup and recoverable trash can for Git
 
 The aim of ``git-blackhole`` is to connect any of your repositories to
 a single repository ("blackhole" repository) to which you can push any
