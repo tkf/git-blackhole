@@ -2,12 +2,14 @@ import os
 import unittest
 from subprocess import call, check_call, check_output
 
+import pytest
+
 from .testutils import MixInGitReposPerMethod, MixInGitReposPerClass
 from .test_git_tools import commitchange
 from git_blackhole import make_run, trash_commitish, trashinfo, gettrashes, \
     git_json_commit, cli_init, cli_trash_branch, cli_trash_stash, \
     cli_fetch_trash, cli_ls_trash, cli_show_trash, cli_rm_local_trash, \
-    cli_warp
+    cli_warp, make_parser, main
 
 
 run = make_run(True, False)
@@ -159,3 +161,17 @@ class TestMisc(MixInGitReposPerClass, unittest.TestCase):
         del parsed['rev_info']
         del parsed['rev']
         assert parsed == dict(orig, heading=heading)
+
+
+def get_subcommands():
+    parser = make_parser()
+    action = parser._subparsers._group_actions[0]
+    return action.choices.keys()
+
+
+@pytest.mark.parametrize('sub_command', [None] + list(get_subcommands()))
+def test_argparse_help(sub_command):
+    args = ['--help'] if sub_command is None else [sub_command, '--help']
+    with pytest.raises(SystemExit) as errinfo:
+        main(args)
+    assert errinfo.value.code == 0
