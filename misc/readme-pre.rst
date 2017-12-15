@@ -2,7 +2,7 @@
  ``git-blackhole`` --- Continuous backup and recoverable trash can for Git
 ===========================================================================
 
-|build-status| |coveralls|
+|pypi| |build-status| |coveralls|
 
 Installation
 ============

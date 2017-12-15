@@ -1,3 +1,8 @@
+.. |pypi|
+   image:: https://badge.fury.io/py/git-blackhole.svg
+   :target: https://badge.fury.io/py/git-blackhole
+   :alt: Python Package Index
+
 .. |build-status|
    image:: https://travis-ci.org/tkf/git-blackhole.svg?branch=master
    :target: https://travis-ci.org/tkf/git-blackhole

@@ -2,7 +2,7 @@
  ``git-blackhole`` --- Continuous backup and recoverable trash can for Git
 ===========================================================================
 
-|build-status| |coveralls|
+|pypi| |build-status| |coveralls|
 
 Installation
 ============
@@ -317,6 +317,11 @@ Options
 
 --all, -a      remove all local copy of trashes (default: False)
 
+
+.. |pypi|
+   image:: https://badge.fury.io/py/git-blackhole.svg
+   :target: https://badge.fury.io/py/git-blackhole
+   :alt: Python Package Index
 
 .. |build-status|
    image:: https://travis-ci.org/tkf/git-blackhole.svg?branch=master
