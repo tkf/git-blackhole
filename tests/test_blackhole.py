@@ -9,10 +9,16 @@ from .test_git_tools import commitchange
 from git_blackhole import make_run, trash_commitish, trashinfo, gettrashes, \
     git_json_commit, cli_init, cli_trash_branch, cli_trash_stash, \
     cli_fetch_trash, cli_ls_trash, cli_show_trash, cli_rm_local_trash, \
-    cli_warp, make_parser, main
+    cli_warp, cli_push, make_parser, main, getprefix
 
 
 run = make_run(True, False)
+
+
+def git_revision(commitish='HEAD', **kwds):
+    kwds.setdefault('universal_newlines', True)
+    return check_output(['git', 'rev-parse', '--verify', commitish],
+                        **kwds).strip()
 
 
 def _setUp_BlackHole(self):
@@ -44,6 +50,33 @@ class MixInBlackholePerMethod(MixInGitReposPerMethod):
     def tearDown(self):
         _tearDown_BlackHole(self)
         super(MixInBlackholePerMethod, self).tearDown()
+
+
+class TestPush(MixInBlackholePerMethod, unittest.TestCase):
+
+    @staticmethod
+    def cli_push(**kwds):
+        default_kwds = dict(
+            verbose=True, dry_run=False, ref_globs=[],
+            remote='blackhole', skip_if_no_blackhole=False,
+        )
+        return cli_push(**dict(default_kwds, **kwds))
+
+    def test_push_head(self):
+        local_rev_0 = git_revision()
+        blackhole_head = getprefix('heads') + '/HEAD'
+
+        self.cli_push()
+        blackhole_rev_0 = git_revision(blackhole_head, cwd='../blackhole.git')
+        assert local_rev_0 == blackhole_rev_0
+
+        commitchange()
+        local_rev_1 = git_revision()
+        assert local_rev_0 != local_rev_1
+
+        self.cli_push()
+        blackhole_rev_1 = git_revision(blackhole_head, cwd='../blackhole.git')
+        assert local_rev_1 == blackhole_rev_1
 
 
 class TestTrash(MixInBlackholePerMethod, unittest.TestCase):
