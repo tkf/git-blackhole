@@ -1,5 +1,5 @@
 #!/bin/bash
-head -n4 functional_tests/basic_usage.t
+head -n6 functional_tests/basic_usage.t
 echo "
 :title: git-blackhole-basic-usage
 :subtitle: Examples
@@ -7,4 +7,4 @@ echo "
 :manual_section: 5
 :manual_group: Git blackhole manual
 "
-tail -n+4 functional_tests/basic_usage.t
+tail -n+6 functional_tests/basic_usage.t
