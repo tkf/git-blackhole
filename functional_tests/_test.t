@@ -1,3 +1,5 @@
+.. -*- mode: rst -*-
+
 Check that ``git-blackhole`` is installed in ``.tox/cram*/bin/``::
 
   $ which git-blackhole
