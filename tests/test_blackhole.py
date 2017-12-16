@@ -194,6 +194,35 @@ class TestMisc(MixInGitReposPerClass, unittest.TestCase):
         assert parsed == dict(orig, heading=heading)
 
 
+class TestCLIUnconfigured(MixInGitReposPerMethod, unittest.TestCase):
+
+    repos = ['local']
+
+    def setUp(self):
+        super(TestCLIUnconfigured, self).setUp()
+
+        self.orig_env = os.environ.copy()
+        os.environ.update(HOME=self.tmpdir)
+
+        self.orig_wd = os.getcwd()
+        os.chdir(self.tmppath('local'))
+
+    def tearDown(self):
+        os.chdir(self.orig_wd)
+        os.environ.clear()
+        os.environ.update(self.orig_env)
+
+        super(TestCLIUnconfigured, self).tearDown()
+
+    def test_push_no_ignore_error(self):
+        with pytest.raises(SystemExit) as excinfo:
+            main(['push'])
+        assert excinfo.value.code == 1
+
+    def test_push_ignore_error(self):
+        main(['push', '--ignore-error'])
+
+
 def get_subcommands():
     parser = make_parser()
     action = parser._subparsers._group_actions[0]
