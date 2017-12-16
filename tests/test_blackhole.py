@@ -33,17 +33,20 @@ def _tearDown_BlackHole(self):
     os.environ.update(self.orig_env)
 
 
-class TestTrash(MixInGitReposPerMethod, unittest.TestCase):
+class MixInBlackholePerMethod(MixInGitReposPerMethod):
 
     repos = ['local', 'blackhole.git']
 
     def setUp(self):
-        super(TestTrash, self).setUp()
+        super(MixInBlackholePerMethod, self).setUp()
         _setUp_BlackHole(self)
 
     def tearDown(self):
         _tearDown_BlackHole(self)
-        super(TestTrash, self).tearDown()
+        super(MixInBlackholePerMethod, self).tearDown()
+
+
+class TestTrash(MixInBlackholePerMethod, unittest.TestCase):
 
     def test_trash_commitish(self):
         run('git', 'checkout', '-b', 'garbage')
@@ -107,13 +110,12 @@ class TestTrash(MixInGitReposPerMethod, unittest.TestCase):
         assert len(trashes0) == 0
 
 
-class TestWarp(MixInGitReposPerMethod, unittest.TestCase):
+class TestWarp(MixInBlackholePerMethod, unittest.TestCase):
 
     repos = ['local', 'another', 'blackhole.git']
 
     def setUp(self):
         super(TestWarp, self).setUp()
-        _setUp_BlackHole(self)
 
         cwd = os.getcwd()
         try:
@@ -124,10 +126,6 @@ class TestWarp(MixInGitReposPerMethod, unittest.TestCase):
             check_call(['git', 'push', 'blackhole', 'master'])
         finally:
             os.chdir(cwd)
-
-    def tearDown(self):
-        _tearDown_BlackHole(self)
-        super(TestWarp, self).tearDown()
 
     def test_warp(self):
         cli_warp(host='', relpath='another', name='bh_another',
