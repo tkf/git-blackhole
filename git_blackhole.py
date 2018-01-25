@@ -80,11 +80,16 @@ def getprefix(type, info=None):
         **info)
 
 
-def getrecinfo(remote='blackhole'):  # TODO: make `remote` mandatory
-    from socket import gethostname
+def getrepopath():
     repo = check_output(['git', 'rev-parse', '--show-toplevel'])
     repo = repo.decode().rstrip()
     relpath = os.path.relpath(repo, os.path.expanduser('~'))
+    return repo, relpath
+
+
+def getrecinfo(remote='blackhole'):  # TODO: make `remote` mandatory
+    from socket import gethostname
+    repo, relpath = getrepopath()
     return dict(
         host=gethostname(),
         repo=repo,
@@ -356,7 +361,26 @@ def refspecs_from_globs(globs, refs=None, info=None):
     return refspecs
 
 
-def cli_init(name, url, verbose, dry_run, _prefix=None):
+def mangle_relpath(relpath):
+    """
+    Mangle a path `relpath` so that it can be used for git branch name.
+
+    >>> mangle_relpath('spam/egg')
+    'spam/egg'
+    >>> mangle_relpath('spam/.egg.spam')
+    'spam/_egg.spam'
+    >>> mangle_relpath('.spam/egg')
+    '_spam/egg'
+
+    """
+    repokey = relpath.replace(os.path.sep + '.', os.path.sep + '_')
+    if repokey.startswith('.'):
+        repokey = '_' + repokey[1:]
+    return repokey
+
+
+def cli_init(name, url, verbose, dry_run, repokey=None, mangle=False,
+             _prefix=None):
     """
     Add blackhole remote at `url` with `name`.
 
@@ -372,7 +396,16 @@ def cli_init(name, url, verbose, dry_run, _prefix=None):
 
     """
     run = make_run(verbose, dry_run)
-    prefix = _prefix or getprefix('heads')
+
+    info = None
+    if mangle:
+        _, relpath = getrepopath()
+        repokey = mangle_relpath(relpath)
+    if repokey:
+        info = getrecinfo()
+        info['repokey'] = repokey
+
+    prefix = _prefix or getprefix('heads', info=info)
     if '/.' in prefix:
         print('git blackhole cannot be configured for repositories',
               'under a hidden directory (starting with ".")')
@@ -382,6 +415,8 @@ def cli_init(name, url, verbose, dry_run, _prefix=None):
         '+refs/heads/{0}/*:refs/remotes/{1}/*' .format(prefix, name))
     run('git', 'config', 'remote.{0}.push'.format(name),
         '+refs/heads/*:{0}/*'.format(prefix))
+    if repokey:
+        run('git', 'config', 'blackhole.{}.repokey'.format(name), repokey)
 
 
 def cli_warp(host, repokey, name, remote, url, **kwds):
@@ -648,6 +683,13 @@ def make_parser(doc=__doc__):
     p = subp('init', cli_init)
     p.add_argument('--name', default='blackhole',
                    help='name of the remote blackhole repository')
+    g = p.add_mutually_exclusive_group()
+    g.add_argument('--mangle', action='store_true',
+                   help='Replace a dot right after the path separator'
+                   ' (hidden directories) to underscore "_".')
+    g.add_argument('--repokey',
+                   help='Set arbitrary REPOKEY for the location of this'
+                   ' repository in the blackhole repository.')
     p.add_argument('url',
                    help='URL of the remote blackhole repository')
 
