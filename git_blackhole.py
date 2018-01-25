@@ -93,7 +93,7 @@ def getrecinfo(remote='blackhole'):  # TODO: make `remote` mandatory
     return dict(
         host=gethostname(),
         repo=repo,
-        repokey=getconfig('blackhole.{}'.format(remote)) or relpath,
+        repokey=getconfig('blackhole.{}.repokey'.format(remote)) or relpath,
         git_blackhole=__version__)
 
 
