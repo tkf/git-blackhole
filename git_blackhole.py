@@ -75,19 +75,20 @@ def make_run(verbose, dry_run, check=True):
 
 def getprefix(type, info=None):
     info = info or getrecinfo()
-    return '{type}/{host}/{relpath}'.format(
+    return '{type}/{host}/{repokey}'.format(
         type=type,
         **info)
 
 
-def getrecinfo():
+def getrecinfo(remote='blackhole'):  # TODO: make `remote` mandatory
     from socket import gethostname
     repo = check_output(['git', 'rev-parse', '--show-toplevel'])
     repo = repo.decode().rstrip()
+    relpath = os.path.relpath(repo, os.path.expanduser('~'))
     return dict(
         host=gethostname(),
         repo=repo,
-        relpath=os.path.relpath(repo, os.path.expanduser('~')),
+        repokey=getconfig('blackhole.{}'.format(remote)) or relpath,
         git_blackhole=__version__)
 
 
@@ -309,7 +310,7 @@ def refspecs_for_stashes(num, info=None):
 
     >>> refspecs_for_stashes(3, info=dict(
     ...     host='myhost',
-    ...     relpath='local/repo',
+    ...     repokey='local/repo',
     ... ))                                 # doctest: +NORMALIZE_WHITESPACE
     ['stash@{0}:refs/heads/stash/myhost/local/repo/0',
      'stash@{1}:refs/heads/stash/myhost/local/repo/1',
@@ -334,7 +335,7 @@ def refspecs_from_globs(globs, refs=None, info=None):
     ...     ],
     ...     info=dict(
     ...         host='myhost',
-    ...         relpath='local/repo',
+    ...         repokey='local/repo',
     ... ))                                 # doctest: +NORMALIZE_WHITESPACE
     ['refs/wip/master:refs/wip/myhost/local/repo/master']
 
@@ -365,8 +366,8 @@ def cli_init(name, url, verbose, dry_run, _prefix=None):
     as if it is a yet another remote repository.
 
     To be more precise, each local branch is related to the branch at
-    the blackhole remote with the prefix ``heads/$HOST/$RELPATH/``
-    where ``$HOST`` is the name of local machine and ``$RELPATH`` is
+    the blackhole remote with the prefix ``heads/$HOST/$REPOKEY/``
+    where ``$HOST`` is the name of local machine and ``$REPOKEY`` is
     the path of the repository relative to ``$HOME``.
 
     """
@@ -383,12 +384,12 @@ def cli_init(name, url, verbose, dry_run, _prefix=None):
         '+refs/heads/*:{0}/*'.format(prefix))
 
 
-def cli_warp(host, relpath, name, remote, url, **kwds):
+def cli_warp(host, repokey, name, remote, url, **kwds):
     """
     Peek into other repositories through the blackhole.
     """
-    if not (host or relpath):
-        print('need HOST or --relpath=RELPATH')
+    if not (host or repokey):
+        print('need HOST or --repokey=REPOKEY')
         return 2
     if not url:
         url = getconfig('remote.{0}.url'.format(remote))
@@ -399,7 +400,7 @@ def cli_warp(host, relpath, name, remote, url, **kwds):
     info = getrecinfo()
     info.update(
         host=host or info['host'],
-        relpath=relpath or info['relpath'],
+        repokey=repokey or info['repokey'],
     )
     prefix = getprefix('heads', info)
     if not name:
@@ -413,7 +414,7 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
     Push branches and HEAD forcefully to blackhole `remote`.
 
     Note that local HEAD is pushed to the remote branch named
-    ``heads/$HOST/$RELPATH/HEAD`` (see help of ``git blackhole init``)
+    ``heads/$HOST/$REPOKEY/HEAD`` (see help of ``git blackhole init``)
     instead of real remote HEAD.  This way, if the blackhole remote is
     shared with other machine, you can recover the HEAD at ``$HOST``.
 
@@ -454,8 +455,8 @@ def cli_trash_branch(branches, verbose, dry_run, **kwds):
     [EXPERIMENTAL] Save `branch` in blackhole `remote` before deletion.
 
     The `branch` is pushed to the branch of the blackhole `remote`
-    named ``trash/$HOST/$RELPATH/$SHA1[:2]/$SHA1[2:]`` where ``$HOST``
-    is the name of local machine, ``$RELPATH`` is the path of the
+    named ``trash/$HOST/$REPOKEY/$SHA1[:2]/$SHA1[2:]`` where ``$HOST``
+    is the name of local machine, ``$REPOKEY`` is the path of the
     repository relative to ``$HOME``, and ``$SHA1`` is the revision of
     the commit.  (To be more precise, ``$SHA`` is the revision of the
     commit recording the revision of `branch` and some meta
@@ -474,7 +475,7 @@ def cli_trash_branch(branches, verbose, dry_run, **kwds):
 
     """
     """
-    - FIXME: Maybe I should remove ``$HOST/$RELPATH`` part and use
+    - FIXME: Maybe I should remove ``$HOST/$REPOKEY`` part and use
       branch named ``trash/$REV[:2]/$REV[2:]``, since the JSON has all
       the info I need.
     """
@@ -652,7 +653,7 @@ def make_parser(doc=__doc__):
 
     p = subp('warp', cli_warp)
     p.add_argument('--name', default='',
-                   help='Name of the repository at <HOST>:<RELPATH>, '
+                   help='Name of the repository at <HOST>:<REPOKEY>, '
                    ' accessed through the blackhole.'
                    ' Set to "bh_<HOST>" if empty.')
     p.add_argument('--url',
@@ -660,7 +661,7 @@ def make_parser(doc=__doc__):
                    ' Use remote.<REMOTE>.url if not given.')
     p.add_argument('--remote', default='blackhole',
                    help='name of the remote blackhole repository')
-    p.add_argument('--relpath',
+    p.add_argument('--repokey',
                    help='The repository relative to the $HOME at <HOST>.'
                    ' Use current repository root if empty.')
     p.add_argument('host', default='', metavar='HOST', nargs='?',

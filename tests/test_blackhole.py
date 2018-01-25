@@ -161,7 +161,7 @@ class TestWarp(MixInBlackholePerMethod, unittest.TestCase):
             os.chdir(cwd)
 
     def test_warp(self):
-        cli_warp(host='', relpath='another', name='bh_another',
+        cli_warp(host='', repokey='another', name='bh_another',
                  remote='blackhole', url='',
                  verbose=True, dry_run=False)
         check_call(['git', 'fetch', 'bh_another'])

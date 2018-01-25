@@ -53,8 +53,8 @@ Initialize blackhole::
   $ git blackhole init ../blackhole.git
 
 It just adds git remote named 'blackhole' (by default) and put prefix
-``heads/$HOST/$RELPATH`` to ``fetch`` and ``push`` configuration, where
-``$RELPATH`` is the relative path to the repository from ``$HOME``::
+``heads/$HOST/$REPOKEY`` to ``fetch`` and ``push`` configuration, where
+``$REPOKEY`` is the relative path to the repository from ``$HOME``::
 
   $ git remote
   blackhole
@@ -78,7 +78,7 @@ normally::
 
 There is ``git blackhole push`` command to push all local branches
 *and* ``HEAD`` to the blackhole.  Note that local ``HEAD`` is pushed
-to remote branch named ``heads/$HOST/$RELPATH/HEAD``.::
+to remote branch named ``heads/$HOST/$REPOKEY/HEAD``.::
 
   $ git blackhole push
   To ../blackhole.git
@@ -155,7 +155,7 @@ Trash ``garbage`` branch::
   Deleted branch garbage (was *). (glob)
 
 Trashed branch is pushed to remote branch named
-``trash/$HOST/$RELPATH/$REV[:2]/$REV[2:]``::
+``trash/$HOST/$REPOKEY/$REV[:2]/$REV[2:]``::
 
   $ git --git-dir=../blackhole.git branch --list | sed s/$(hostname)/myhost/g
     heads/myhost/local/HEAD

@@ -84,8 +84,8 @@ There are three main features of ``git-blackhole``:
     as if it is a yet another remote repository.
 
     To be more precise, each local branch is related to the branch at
-    the blackhole remote with the prefix ``heads/$HOST/$RELPATH/``
-    where ``$HOST`` is the name of local machine and ``$RELPATH`` is
+    the blackhole remote with the prefix ``heads/$HOST/$REPOKEY/``
+    where ``$HOST`` is the name of local machine and ``$REPOKEY`` is
     the path of the repository relative to ``$HOME``.
 
 
@@ -100,7 +100,7 @@ There are three main features of ``git-blackhole``:
     Push branches and HEAD forcefully to blackhole `remote`.
 
     Note that local HEAD is pushed to the remote branch named
-    ``heads/$HOST/$RELPATH/HEAD`` (see help of ``git blackhole init``)
+    ``heads/$HOST/$REPOKEY/HEAD`` (see help of ``git blackhole init``)
     instead of real remote HEAD.  This way, if the blackhole remote is
     shared with other machine, you can recover the HEAD at ``$HOST``.
 
@@ -120,8 +120,8 @@ There are three main features of ``git-blackhole``:
     [EXPERIMENTAL] Save `branch` in blackhole `remote` before deletion.
 
     The `branch` is pushed to the branch of the blackhole `remote`
-    named ``trash/$HOST/$RELPATH/$SHA1[:2]/$SHA1[2:]`` where ``$HOST``
-    is the name of local machine, ``$RELPATH`` is the path of the
+    named ``trash/$HOST/$REPOKEY/$SHA1[:2]/$SHA1[2:]`` where ``$HOST``
+    is the name of local machine, ``$REPOKEY`` is the path of the
     repository relative to ``$HOME``, and ``$SHA1`` is the revision of
     the commit.  (To be more precise, ``$SHA`` is the revision of the
     commit recording the revision of `branch` and some meta
@@ -199,7 +199,7 @@ Options
 --dry-run, -n      do nothing when given. Use it with --verbose to see what
                    is going to happen. (default: False)
 
---name NAME        Name of the repository at <HOST>:<RELPATH>, accessed
+--name NAME        Name of the repository at <HOST>:<REPOKEY>, accessed
                    through the blackhole. Set to "bh_<HOST>" if empty.
                    (default: )
 
@@ -209,7 +209,7 @@ Options
 --remote REMOTE    name of the remote blackhole repository (default:
                    blackhole)
 
---relpath RELPATH  The repository relative to the $HOME at <HOST>. Use
+--repokey REPOKEY  The repository relative to the $HOME at <HOST>. Use
                    current repository root if empty. (default: None)
 
 
