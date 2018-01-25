@@ -41,7 +41,7 @@ Add some changes in the local repository::
   $ commit
   $ git remote add origin ../origin.git
   $ git push --quiet --set-upstream origin master
-  Branch master set up to track remote branch master from origin.
+  Branch 'master' set up to track remote branch 'master' from 'origin'.
 
 .. [[[end]]]
 

@@ -42,7 +42,7 @@ Push it to the origin::
   $ git push --set-upstream origin master
   To ../origin.git
    * [new branch]      master -> master
-  Branch master set up to track remote branch master from origin.
+  Branch 'master' set up to track remote branch 'master' from 'origin'.
 
 
 Initialize git-blackhole
@@ -142,7 +142,7 @@ Make a new branch which would be trashed later.::
   $ git commit --message 'Garbage commit' > /dev/null
   $ git checkout master
   Switched to branch 'master'
-  Your branch is up-to-date with 'origin/master'.
+  Your branch is up to date with 'origin/master'.
   $ git branch --list
     garbage
   * master
@@ -195,7 +195,7 @@ Suppose the branch to be trashed has upstream repository::
   $ git push --set-upstream origin garbage
   To ../origin.git
    * [new branch]      garbage -> garbage
-  Branch garbage set up to track remote branch garbage from origin.
+  Branch 'garbage' set up to track remote branch 'garbage' from 'origin'.
   $ git --git-dir=../origin.git branch --list
     garbage
   * master
@@ -205,7 +205,7 @@ option::
 
   $ git checkout master
   Switched to branch 'master'
-  Your branch is up-to-date with 'origin/master'.
+  Your branch is up to date with 'origin/master'.
   $ git blackhole trash-branch --remove-upstream garbage
   To ../blackhole.git
    * [new branch]      * -> trash/*/local/*/* (glob)
@@ -225,7 +225,7 @@ not set.  To show this, let's make garbage branch once again.::
   $ git commit --message 'Garbage commit' > /dev/null
   $ git checkout master
   Switched to branch 'master'
-  Your branch is up-to-date with 'origin/master'.
+  Your branch is up to date with 'origin/master'.
 
 The last line of the output of ``trash-branch --remove-upstream``
 notify you that any upstream branch is not touched::
