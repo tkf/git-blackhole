@@ -379,6 +379,10 @@ def mangle_relpath(relpath):
     return repokey
 
 
+def is_bad_branch_name(branch):
+    return os.path.sep + '.' in branch
+
+
 def cli_init(name, url, verbose, dry_run, repokey=None, mangle=False,
              _prefix=None):
     """
@@ -398,7 +402,8 @@ def cli_init(name, url, verbose, dry_run, repokey=None, mangle=False,
     run = make_run(verbose, dry_run)
 
     info = None
-    if mangle:
+    if mangle == 'always' or (mangle == 'auto' and
+                              is_bad_branch_name(getprefix('heads'))):
         _, relpath = getrepopath()
         repokey = mangle_relpath(relpath)
     if repokey:
@@ -406,7 +411,7 @@ def cli_init(name, url, verbose, dry_run, repokey=None, mangle=False,
         info['repokey'] = repokey
 
     prefix = _prefix or getprefix('heads', info=info)
-    if '/.' in prefix:
+    if is_bad_branch_name(prefix):
         print('git blackhole cannot be configured for repositories',
               'under a hidden directory (starting with ".")')
         return 1
@@ -684,9 +689,15 @@ def make_parser(doc=__doc__):
     p.add_argument('--name', default='blackhole',
                    help='name of the remote blackhole repository')
     g = p.add_mutually_exclusive_group()
-    g.add_argument('--mangle', action='store_true',
+    g.add_argument('--mangle', nargs='?', choices=['never', 'always', 'auto'],
+                   const='auto', default='never',
                    help='Replace a dot right after the path separator'
-                   ' (hidden directories) to underscore "_".')
+                   ' (hidden directories) to underscore "_" and use it as'
+                   ' REPOKEY.'
+                   ' --mangle[=auto] means to do it only when necessary.'
+                   ' --mangle=always means to always set REPOKEY.'
+                   ' --mangle=never means no replacement and fail with an'
+                   ' error for hidden directories.')
     g.add_argument('--repokey',
                    help='Set arbitrary REPOKEY for the location of this'
                    ' repository in the blackhole repository.')
