@@ -183,12 +183,25 @@ Options
 ``git blackhole init``
 ------------------------------------------------------------------
 
---verbose, -v  print git commands to run (default: False)
+--verbose, -v         print git commands to run (default: False)
 
---dry-run, -n  do nothing when given. Use it with --verbose to see what is
-               going to happen. (default: False)
+--dry-run, -n         do nothing when given. Use it with --verbose to see
+                      what is going to happen. (default: False)
 
---name NAME    name of the remote blackhole repository (default: blackhole)
+--name NAME           name of the remote blackhole repository (default:
+                      blackhole)
+
+--mangle [{never,always,auto}]
+                      Replace a dot right after the path separator (hidden
+                      directories) to underscore "_" and use it as REPOKEY.
+                      --mangle[=auto] means to do it only when necessary.
+                      --mangle=always means to always set REPOKEY.
+                      --mangle=never means no replacement and fail with an
+                      error for hidden directories. (default: never)
+
+--repokey REPOKEY     Set arbitrary REPOKEY for the location of this
+                      repository in the blackhole repository. (default:
+                      None)
 
 
 ``git blackhole warp``
@@ -234,8 +247,8 @@ Options
 --ignore-error        quick with code 0 on error (default: False)
 
 --skip-if-no-blackhole
-                      do nothing if git blackhole is not configured (default:
-                      False)
+                      do nothing if git blackhole is not configured
+                      (default: False)
 
 
 ``git blackhole trash-branch``
@@ -286,7 +299,8 @@ Options
 --dry-run, -n    do nothing when given. Use it with --verbose to see what is
                  going to happen. (default: False)
 
---remote REMOTE  name of the remote blackhole repository (default: blackhole)
+--remote REMOTE  name of the remote blackhole repository (default:
+                 blackhole)
 
 
 ``git blackhole ls-trash``
