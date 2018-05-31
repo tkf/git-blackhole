@@ -23,3 +23,5 @@ script:
   - tox -- $TOX_OPTS
 after_success:
   - if [ "$TESTPREFIX" = py ]; then coveralls; fi
+notifications:
+  email: false
