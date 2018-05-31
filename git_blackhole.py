@@ -402,8 +402,9 @@ def cli_init(name, url, verbose, dry_run, repokey=None, mangle='default',
     run = make_run(verbose, dry_run)
 
     info = None
-    if mangle == 'always' or (mangle == 'auto' and
-                              is_bad_branch_name(getprefix('heads'))):
+    if (not repokey) and (
+            mangle == 'always' or
+            (mangle == 'auto' and is_bad_branch_name(getprefix('heads')))):
         _, relpath = getrepopath()
         repokey = mangle_relpath(relpath)
     if repokey:

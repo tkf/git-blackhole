@@ -109,6 +109,9 @@ class TestInitInHiddenRepo(TestInit):
         assert self.cli_init(_check=False, mangle='never') != (0, None)
         assert not self.is_configured()
 
+    def test_explicit_repokey_with_auto_mangle(self):
+        self.test_explicit_repokey(mangle='auto')
+
 
 class MixInBlackholePerMethod(MixInGitReposPerMethod):
 
