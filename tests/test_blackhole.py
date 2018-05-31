@@ -92,6 +92,12 @@ class TestInit(MixInGitReposPerMethod, unittest.TestCase):
     def test_mangle_never(self):
         self.test_mangle_auto(mangle='never')
 
+    def test_explicit_repokey(self, **kwargs):
+        repokey = 'explicit-repokey'
+        self.cli_init(repokey=repokey, **kwargs)
+        assert self.is_configured()
+        assert getconfig('blackhole.{}.repokey'.format(self.remote)) == repokey
+
 
 class TestInitInHiddenRepo(TestInit):
     main_repo = '.local'
