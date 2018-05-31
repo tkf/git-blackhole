@@ -1,5 +1,6 @@
 *.pyc
 .coverage
+.pytest_cache
 /*.egg-info
 /.cache
 /.tox

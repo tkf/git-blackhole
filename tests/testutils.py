@@ -92,22 +92,28 @@ class MixInGitRepoPerClass(MixInTempDirPerClass):
 
 
 def _setUp_GitRepos(self):
-    for repo in self.repos:
+    for repo in self.get_repos():
         _prepare_repo(self, repo)
 
 
-class MixInGitReposPerMethod(MixInTempDirPerMethod):
+class BaseGitRepos(object):
 
-    repos = []
+    main_repo = 'local'
+    other_repos = []
+
+    @classmethod
+    def get_repos(self):
+        return [self.main_repo] + self.other_repos
+
+
+class MixInGitReposPerMethod(MixInTempDirPerMethod, BaseGitRepos):
 
     def setUp(self):
         super(MixInGitReposPerMethod, self).setUp()
         _setUp_GitRepos(self)
 
 
-class MixInGitReposPerClass(MixInTempDirPerClass):
-
-    repos = []
+class MixInGitReposPerClass(MixInTempDirPerClass, BaseGitRepos):
 
     @classmethod
     def setUpClass(cls):

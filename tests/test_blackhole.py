@@ -26,7 +26,7 @@ def _setUp_BlackHole(self):
     os.environ.update(HOME=self.tmpdir)
 
     self.orig_wd = os.getcwd()
-    os.chdir(self.tmppath('local'))
+    os.chdir(self.tmppath(self.main_repo))
 
     cli_init(name='blackhole', url='../blackhole.git',
              verbose=True, dry_run=False)
@@ -41,7 +41,7 @@ def _tearDown_BlackHole(self):
 
 class MixInBlackholePerMethod(MixInGitReposPerMethod):
 
-    repos = ['local', 'blackhole.git']
+    other_repos = ['blackhole.git']
 
     def setUp(self):
         super(MixInBlackholePerMethod, self).setUp()
@@ -145,7 +145,7 @@ class TestTrash(MixInBlackholePerMethod, unittest.TestCase):
 
 class TestWarp(MixInBlackholePerMethod, unittest.TestCase):
 
-    repos = ['local', 'another', 'blackhole.git']
+    other_repos = ['another', 'blackhole.git']
 
     def setUp(self):
         super(TestWarp, self).setUp()
@@ -171,7 +171,7 @@ class TestWarp(MixInBlackholePerMethod, unittest.TestCase):
 
 class TestMisc(MixInGitReposPerClass, unittest.TestCase):
 
-    repos = ['local', 'blackhole.git']
+    other_repos = ['blackhole.git']
 
     @classmethod
     def setUpClass(cls):
@@ -196,8 +196,6 @@ class TestMisc(MixInGitReposPerClass, unittest.TestCase):
 
 class TestCLIUnconfigured(MixInGitReposPerMethod, unittest.TestCase):
 
-    repos = ['local']
-
     def setUp(self):
         super(TestCLIUnconfigured, self).setUp()
 
@@ -205,7 +203,7 @@ class TestCLIUnconfigured(MixInGitReposPerMethod, unittest.TestCase):
         os.environ.update(HOME=self.tmpdir)
 
         self.orig_wd = os.getcwd()
-        os.chdir(self.tmppath('local'))
+        os.chdir(self.tmppath(self.main_repo))
 
     def tearDown(self):
         os.chdir(self.orig_wd)
