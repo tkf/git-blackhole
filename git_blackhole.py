@@ -657,6 +657,9 @@ def make_parser(doc=__doc__):
     parser = argparse.ArgumentParser(
         formatter_class=FormatterClass,
         description=doc)
+    parser.add_argument(
+        '--version', action='version',
+        version='%(prog)s {} from {}'.format(__version__, __file__))
     parser.add_argument('--debug', default=False, action='store_true')
     subparsers = parser.add_subparsers()
 
