@@ -224,6 +224,26 @@ class TestCLIUnconfigured(MixInGitReposPerMethod, unittest.TestCase):
         main(['push', '--ignore-error'])
 
 
+class TestPushInHiddenRepo(TestPush):
+    main_repo = '.local'
+
+
+class TestTrashInHiddenRepo(TestTrash):
+    main_repo = '.local'
+
+
+class TestWarpInHiddenRepo(TestWarp):
+    main_repo = '.local'
+
+
+class TestMiscInHiddenRepo(TestMisc):
+    main_repo = '.local'
+
+
+class TestCLIUnconfiguredInHiddenRepo(TestCLIUnconfigured):
+    main_repo = '.local'
+
+
 def get_subcommands():
     parser = make_parser()
     action = parser._subparsers._group_actions[0]
