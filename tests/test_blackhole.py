@@ -9,7 +9,7 @@ from .test_git_tools import commitchange
 from git_blackhole import make_run, trash_commitish, trashinfo, gettrashes, \
     git_json_commit, cli_init, cli_trash_branch, cli_trash_stash, \
     cli_fetch_trash, cli_ls_trash, cli_show_trash, cli_rm_local_trash, \
-    cli_warp, cli_push, make_parser, main, getprefix
+    cli_warp, cli_push, make_parser, main, getprefix, getconfig
 
 
 run = make_run(True, False)
@@ -21,12 +21,22 @@ def git_revision(commitish='HEAD', **kwds):
                         **kwds).strip()
 
 
-def _setUp_BlackHole(self):
+def _setUp_home(self):
     self.orig_env = os.environ.copy()
     os.environ.update(HOME=self.tmpdir)
 
     self.orig_wd = os.getcwd()
     os.chdir(self.tmppath(self.main_repo))
+
+
+def _tearDown_home(self):
+    os.chdir(self.orig_wd)
+    os.environ.clear()
+    os.environ.update(self.orig_env)
+
+
+def _setUp_BlackHole(self):
+    _setUp_home(self)
 
     code = cli_init(
         name='blackhole',
@@ -39,9 +49,59 @@ def _setUp_BlackHole(self):
 
 
 def _tearDown_BlackHole(self):
-    os.chdir(self.orig_wd)
-    os.environ.clear()
-    os.environ.update(self.orig_env)
+    _tearDown_home(self)
+
+
+class TestInit(MixInGitReposPerMethod, unittest.TestCase):
+
+    other_repos = ['blackhole.git']
+    remote = 'blackhole'
+
+    def setUp(self):
+        super(TestInit, self).setUp()
+        _setUp_home(self)
+
+    def tearDown(self):
+        _tearDown_home(self)
+        super(TestInit, self).tearDown()
+
+    def cli_init(self, _check=True, **kwds):
+        default_kwds = dict(
+            verbose=True, dry_run=False,
+            name=self.remote,
+            url='../blackhole.git',
+        )
+        code = cli_init(**dict(default_kwds, **kwds))
+        if _check:
+            assert code is None
+        return code
+
+    def is_configured(self):
+        config = 'remote.{}.url'.format(self.remote)
+        return getconfig(config) is not None
+
+    def test_mangle_auto(self, mangle='auto'):
+        self.cli_init(mangle=mangle)
+        assert self.is_configured()
+
+    def test_mangle_always(self, mangle='always'):
+        self.cli_init(mangle=mangle)
+        assert self.is_configured()
+        assert getconfig('blackhole.{}.repokey'.format(self.remote))
+
+    def test_mangle_never(self):
+        self.test_mangle_auto(mangle='never')
+
+
+class TestInitInHiddenRepo(TestInit):
+    main_repo = '.local'
+
+    def test_mangle_auto(self):
+        self.test_mangle_always(mangle='auto')
+
+    def test_mangle_never(self):
+        assert self.cli_init(_check=False, mangle='never') != (0, None)
+        assert not self.is_configured()
 
 
 class MixInBlackholePerMethod(MixInGitReposPerMethod):
@@ -67,7 +127,7 @@ class TestPush(MixInBlackholePerMethod, unittest.TestCase):
         )
         code = cli_push(**dict(default_kwds, **kwds))
         if _check:
-            assert code == 0
+            assert code in (0, None)
         return code
 
     def test_push_head(self):
@@ -206,18 +266,10 @@ class TestCLIUnconfigured(MixInGitReposPerMethod, unittest.TestCase):
 
     def setUp(self):
         super(TestCLIUnconfigured, self).setUp()
-
-        self.orig_env = os.environ.copy()
-        os.environ.update(HOME=self.tmpdir)
-
-        self.orig_wd = os.getcwd()
-        os.chdir(self.tmppath(self.main_repo))
+        _setUp_home(self)
 
     def tearDown(self):
-        os.chdir(self.orig_wd)
-        os.environ.clear()
-        os.environ.update(self.orig_env)
-
+        _tearDown_home(self)
         super(TestCLIUnconfigured, self).tearDown()
 
     def test_push_no_ignore_error(self):
