@@ -383,7 +383,7 @@ def is_bad_branch_name(branch):
     return os.path.sep + '.' in branch
 
 
-def cli_init(name, url, verbose, dry_run, repokey=None, mangle=False,
+def cli_init(name, url, verbose, dry_run, repokey=None, mangle='default',
              _prefix=None):
     """
     Add blackhole remote at `url` with `name`.

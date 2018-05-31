@@ -28,8 +28,13 @@ def _setUp_BlackHole(self):
     self.orig_wd = os.getcwd()
     os.chdir(self.tmppath(self.main_repo))
 
-    cli_init(name='blackhole', url='../blackhole.git',
-             verbose=True, dry_run=False)
+    code = cli_init(
+        name='blackhole',
+        url='../blackhole.git',
+        mangle='auto',
+        verbose=True,
+        dry_run=False)
+    assert code in (0, None)
     commitchange()
 
 
