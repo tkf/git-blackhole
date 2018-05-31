@@ -55,12 +55,15 @@ class MixInBlackholePerMethod(MixInGitReposPerMethod):
 class TestPush(MixInBlackholePerMethod, unittest.TestCase):
 
     @staticmethod
-    def cli_push(**kwds):
+    def cli_push(_check=True, **kwds):
         default_kwds = dict(
             verbose=True, dry_run=False, ref_globs=[],
             remote='blackhole', skip_if_no_blackhole=False,
         )
-        return cli_push(**dict(default_kwds, **kwds))
+        code = cli_push(**dict(default_kwds, **kwds))
+        if _check:
+            assert code == 0
+        return code
 
     def test_push_head(self):
         local_rev_0 = git_revision()
