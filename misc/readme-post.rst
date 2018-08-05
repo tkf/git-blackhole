@@ -1,3 +1,9 @@
+.. |logo|
+   image:: logo/horizontal.png
+   :align: middle
+   :target: logo/
+   :alt: Logo by @reallinfo https://github.com/reallinfo. This work is licensed under a Creative Commons Attribution 4.0 International License. (https://creativecommons.org/licenses/by/4.0/)
+
 .. |pypi|
    image:: https://badge.fury.io/py/git-blackhole.svg
    :target: https://badge.fury.io/py/git-blackhole

@@ -2,6 +2,12 @@
  ``git-blackhole`` --- Continuous backup and recoverable trash can for Git
 ===========================================================================
 
+|logo|
+
+    Logo by `@reallinfo <https://github.com/reallinfo>`_.  The logo is
+    licensed under a `Creative Commons Attribution 4.0 International
+    License <https://creativecommons.org/licenses/by/4.0/>`_.
+
 |pypi| |build-status| |coveralls|
 
 Installation
@@ -331,6 +337,12 @@ Options
 
 --all, -a      remove all local copy of trashes (default: False)
 
+
+.. |logo|
+   image:: logo/horizontal.png
+   :align: middle
+   :target: logo/
+   :alt: Logo by @reallinfo https://github.com/reallinfo. This work is licensed under a Creative Commons Attribution 4.0 International License. (https://creativecommons.org/licenses/by/4.0/)
 
 .. |pypi|
    image:: https://badge.fury.io/py/git-blackhole.svg
