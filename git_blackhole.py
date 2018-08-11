@@ -55,6 +55,10 @@ __author__ = 'Takafumi Arakaki'
 __license__ = 'BSD-2-Clause'  # SPDX short identifier
 
 
+class BlackholeError(RuntimeError):
+    pass
+
+
 def make_run(verbose, dry_run, check=True):
     from subprocess import check_call, call
 
@@ -214,6 +218,12 @@ def trash_commitish(commitish, remote, info, headingtemp,
     prefix = getprefix('trash')
     rev = check_output(['git', 'rev-parse', commitish]).strip()
     url = getconfig('remote.{0}.url'.format(remote))
+    if url is None:
+        raise BlackholeError(
+            "Cannot find blackhole remote URL.\n"
+            "Please run `git blackhole init` first.\n"
+            "(Note: remote.{}.url is not configured.)"
+            .format(remote))
     info = dict(info, **getrecinfo())
     heading = headingtemp.format(**info)
     rev = git_json_commit(heading, info, commitish)
@@ -791,6 +801,11 @@ def main(args=None):
             print("ignoring the error")
             return
         sys.exit(code)
+    except BlackholeError as err:
+        if debug:
+            raise
+        print(err)
+        sys.exit(1)
     except CalledProcessError as err:
         if debug:
             raise
