@@ -1,6 +1,6 @@
 .. -*- mode: rst -*-
 
-Check that ``git-blackhole`` is installed in ``.tox/cram*/bin/``::
+Check that ``git-blackhole`` is installed in ``.tox/py*-cram*/bin/``::
 
   $ which git-blackhole
-  */.tox/cram*/bin/git-blackhole (glob)
+  */.tox/py*-cram*/bin/git-blackhole (glob)
