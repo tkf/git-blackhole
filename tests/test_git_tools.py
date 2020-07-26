@@ -43,14 +43,14 @@ class TestGitTools(MixInGitRepoPerMethod, unittest.TestCase):
 
     def test_getbranches(self):
         commitchange()
-        assert getbranches() == (['master'], 'master')
+        assert getbranches() == (["master"], ["master"])
 
         newbranches = list(map('br{}'.format, range(10)))
         for b in newbranches:
             check_call(['git', 'branch', b])
 
         check_call(['git', 'checkout', newbranches[2]])
-        assert getbranches() == (newbranches + ['master'], newbranches[2])
+        assert getbranches() == (newbranches + ["master"], [newbranches[2]])
 
     def test_parse_stashes(self):
         commitchange()

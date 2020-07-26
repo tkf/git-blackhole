@@ -102,15 +102,18 @@ def getrecinfo(remote='blackhole'):  # TODO: make `remote` mandatory
 
 
 def getbranches():
-    checkout = None
+    checkedout_branches = []
     branches = []
-    out = check_output(['git', 'branch', '--list']).decode()
+    out = check_output(
+        ["git", "branch", "--list", "--format=%(refname:short) %(worktreepath)"]
+    ).decode()
     for line in out.splitlines():
-        br = line.lstrip('*').strip()
+        branch_worktree = line.split(maxsplit=1)
+        br = branch_worktree[0]
         branches.append(br)
-        if line.startswith('*'):
-            checkout = br
-    return branches, checkout
+        if len(branch_worktree) == 2:
+            checkedout_branches.append(br)
+    return branches, checkedout_branches
 
 
 def getrefs():
@@ -488,7 +491,7 @@ def cli_push(verbose, dry_run, ref_globs, remote, skip_if_no_blackhole,
             return 1
     run = make_run(verbose, dry_run, check=False)
     prefix = getprefix('heads')
-    branches, _checkout = getbranches()
+    branches, _checkedout_branches = getbranches()
 
     # Build "git push" command options:
     cmd = cmd_push(remote=remote, force=True, **kwds)
@@ -531,21 +534,21 @@ def cli_trash_branch(branches, verbose, dry_run, **kwds):
       the info I need.
     """
     run = make_run(verbose, dry_run)
-    _branches, checkout = getbranches()
+    _branches, checkedout_branches = getbranches()
     final_code = None
     for branch in branches:
-        code = trash_branch(run, checkout, branch,
-                            verbose=verbose, dry_run=dry_run,
-                            **kwds)
+        code = trash_branch(
+            run, checkedout_branches, branch, verbose=verbose, dry_run=dry_run, **kwds
+        )
         if code:
             final_code = code
     return final_code
 
 
-def trash_branch(run, checkout, branch, verbose, dry_run,
-                 remote, remove_upstream,
-                 **kwds):
-    if branch == checkout:
+def trash_branch(
+    run, checkedout_branches, branch, verbose, dry_run, remote, remove_upstream, **kwds
+):
+    if branch in checkedout_branches:
         print("Cannot trash the branch '{0}' which you are currently on."
               .format(branch))
         return 1
