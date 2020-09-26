@@ -5,6 +5,7 @@
 /.cache
 /.tox
 /MANIFEST
+/coverage.xml
 /dist
 /doc/build
 
