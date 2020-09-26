@@ -18,7 +18,5 @@ before_install:
   # installed outside tox.
 script:
   - tox
-after_success:
-  - if [ "$TOXENV" = py-pytest ]; then coveralls; fi
 notifications:
   email: false
