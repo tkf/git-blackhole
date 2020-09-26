@@ -18,7 +18,10 @@ before_install:
   # installed outside tox.
 script:
   - tox
-after_success:
-  - if [ "$TOXENV" = py-pytest ]; then coveralls; fi
 notifications:
   email: false
+
+# Only build branches via PR to avoid running CI twice.
+# https://docs.travis-ci.com/user/conditional-builds-stages-jobs
+# https://docs.travis-ci.com/user/conditions-v1
+if: branch = master OR tag IS present OR type != push
